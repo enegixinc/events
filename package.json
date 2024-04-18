@@ -1,9 +1,8 @@
 {
   "name": "@enegix/source",
-  "version": "0.0.0",
+  "version": "0.0.2",
   "license": "MIT",
   "scripts": {
-    "publish": "nx run-many --target=build --all --parallel && nx run-many --target=pack --all --parallel && nx run-many --target=publish --all --parallel"
   },
   "publishConfig": {
     "access": "public"
