@@ -1,8 +1,13 @@
 {
-  "name": "@enegix/events",
+  "name": "@enegix/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "publish": "nx run-many --target=build --all --parallel && nx run-many --target=pack --all --parallel && nx run-many --target=publish --all --parallel"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "private": true,
   "devDependencies": {
     "@nx/eslint": "18.2.3",
@@ -47,5 +52,9 @@
   "bugs": {
     "url": "https://github.com/enegixinc/events/issues"
   },
-  "homepage": "https://github.com/enegixinc/events#readme"
+  "homepage": "https://github.com/enegixinc/events#readme",
+  "dependencies": {
+    "eventemitter3": "^5.0.1",
+    "tslib": "^2.6.2"
+  }
 }
