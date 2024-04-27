@@ -1,5 +1,5 @@
 {
-  "name": "@enegix/source",
+  "name": "@enegix/events-source",
   "scripts": {},
   "publishConfig": {
     "access": "public"

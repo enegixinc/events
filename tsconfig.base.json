@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@enegix/events": ["libs/core/src/index.ts"],
+      "@enegix/events": ["libs/events/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

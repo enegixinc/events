@@ -1,7 +1,7 @@
 {
-  "name": "core",
+  "name": "events",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/core/src",
+  "sourceRoot": "libs/events/src",
   "projectType": "library",
   "release": {
     "version": {
@@ -15,12 +15,16 @@
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
-        "outputPath": "dist/libs/core",
-        "main": "libs/core/src/index.ts",
-        "tsConfig": "libs/core/tsconfig.lib.json",
-        "assets": ["libs/core/*.md"]
+        "outputPath": "dist/libs/events",
+        "main": "libs/events/src/index.ts",
+        "tsConfig": "libs/events/tsconfig.lib.json",
+        "assets": [
+          "libs/events/*.md"
+        ]
       }
     },
     "nx-release-publish": {
@@ -30,9 +34,11 @@
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": ["{options.reportsDirectory}"],
+      "outputs": [
+        "{options.reportsDirectory}"
+      ],
       "options": {
-        "reportsDirectory": "../../coverage/libs/core"
+        "reportsDirectory": "../../coverage/libs/events"
       }
     }
   }
