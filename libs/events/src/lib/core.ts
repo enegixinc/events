@@ -1,66 +1,98 @@
 import { EventEmitter } from 'eventemitter3';
 
-const emitter = new EventEmitter();
+function Loggable() {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    const originalMethod = descriptor.value;
 
-type Subscribe = (
-  events: string | string[],
-  callback: (data: unknown) => void
-) => {
-  data: unknown;
-  unsubscribe: () => void;
-};
+    descriptor.value = function (...args: any[]) {
+      console.log(`Calling '${propertyKey}' with arguments: ${args}`);
+      const result = originalMethod.apply(this, args);
+      console.log(`'${propertyKey}' returned: ${result}`);
+      return result;
+    };
 
-export const subscribe: Subscribe = (events, callback) => {
-  let eventList: string[];
+    return descriptor;
+  };
+}
 
-  if (typeof events === 'string') {
-    eventList = [events];
-  } else {
-    eventList = events;
+class EventsManager<T> {
+  emitter: EventEmitter;
+
+  constructor() {
+    this.emitter = new EventEmitter();
+    console.log('EventsManager initialized');
   }
 
-  let data;
+  publish(event: string, data?: T) {
+    this.emitter.emit(event, data);
+    console.log(
+      `Published '${event}' event with data: ${JSON.stringify(data)}`
+    );
+  }
 
-  const _callback = (_data: unknown) => {
-    data = _data;
-    callback(data);
-    console.log(`Received data: ${JSON.stringify(data)}`);
+  subscribe = <ExpectedData>(
+    event: string | string[],
+    callback: (data: ExpectedData) => void
+  ) => {
+    const isMultipleEvents = Array.isArray(event);
+    const _callback = this.constructCallback(callback);
+
+    if (isMultipleEvents)
+      event.forEach((event) => this._subscribe(event, _callback));
+    else this._subscribe(event, _callback);
+
+    return { unsubscribe: () => this.unsubscribe(event) };
   };
 
-  const unSubscriptions = eventList.map((event) => {
+  private _subscribe<ExpectedData>(
+    event: string,
+    callback: (data: ExpectedData) => void,
+    once: boolean = false
+  ) {
+    if (once) this.emitter.once(event, callback);
+    else this.emitter.on(event, callback);
     console.log(`Subscribed to event '${event}'`);
-    emitter.on(event, _callback);
-    return () => {
-      emitter.off(event, _callback);
-      console.log(`Unsubscribed from event '${event}'`);
+  }
+
+  private constructCallback<ExpectedData>(
+    callback: (data: ExpectedData) => void
+  ) {
+    return (receivedData: ExpectedData) => {
+      callback(receivedData);
+      console.log(`Received data: ${JSON.stringify(receivedData)}`);
     };
-  });
+  }
 
-  const unsubscribe = () => {
-    unSubscriptions.forEach((unsub) => {
-      unsub();
-      console.log(`Unsubscribed from event '${unsub.name}'`);
-    });
-  };
+  private unsubscribe(event: string | string[]) {
+    if (Array.isArray(event)) {
+      event.forEach((event) => {
+        this.emitter.off(event);
+        console.log(`Unsubscribed from event '${event}'`);
+      });
+    } else {
+      this.emitter.off(event);
+      console.log(`Unsubscribed from event '${event}'`);
+    }
+  }
 
-  return { data, unsubscribe };
-};
+  subscribeOnce(event: string, callback: (data: T) => void) {
+    const _callback = this.constructCallback(callback);
+    this._subscribe(event, _callback, true);
+    return { unsubscribe: () => this.unsubscribe(event) };
+  }
 
-export const subscribeOnce = (
-  event: string,
-  callback: (data: unknown) => void
-) => {
-  emitter.once(event, callback);
-  return { unsubscribe: () => emitter.off(event, callback) };
-};
+  unsubscribeAll() {
+    this.emitter.removeAllListeners();
+  }
+}
 
-type Publish = (event: string, data?: unknown) => void;
+const globalTopic = new EventsManager();
 
-export const publish: Publish = (event, data) => {
-  emitter.emit(event, data);
-  console.log(`Published '${event}' event with data: ${JSON.stringify(data)}`);
-};
-
-export const unsubscribeAll = () => {
-  emitter.removeAllListeners();
-};
+export const publish = globalTopic.publish.bind(globalTopic);
+export const subscribe = globalTopic.subscribe.bind(globalTopic);
+export const subscribeOnce = globalTopic.subscribeOnce.bind(globalTopic);
+export const unsubscribeAll = globalTopic.unsubscribeAll.bind(globalTopic);

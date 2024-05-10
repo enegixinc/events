@@ -1,6 +1,6 @@
 // Mock console.log to prevent output during testing
-import { publish, subscribe, unsubscribeAll } from '@enegix/events';
-import { expect, MockInstance, vitest } from 'vitest';
+import { publish, subscribe, unsubscribeAll } from './core';
+import { expect, MockInstance, test, vitest } from 'vitest';
 
 describe('subscribe function', () => {
   let callbackSpy: MockInstance;
@@ -76,5 +76,23 @@ describe('subscribe function', () => {
     expect(callbackSpy).toHaveBeenCalledWith(
       'Published \'event2\' event with data: "testData2"'
     );
+  });
+
+  test('ExpectedData type', () => {
+    const callback = console.log;
+    const { unsubscribe } = subscribe<string>('string', callback);
+
+    publish('string', 'testData');
+
+    expect(callbackSpy).toHaveBeenCalledWith('testData');
+    expect(callbackSpy).toHaveBeenCalledWith(
+      'Published \'string\' event with data: "testData"'
+    );
+
+    publish('number', 123);
+
+    subscribe<number>('number', (data) => {
+      expect(data).toBe(123);
+    });
   });
 });
