@@ -67,7 +67,7 @@ class EventsManager<T> {
     };
   }
 
-  private unsubscribe(event: string | string[]) {
+  unsubscribe(event: string | string[]) {
     if (Array.isArray(event)) {
       event.forEach((event) => {
         this.emitter.off(event);
@@ -94,5 +94,6 @@ const globalTopic = new EventsManager();
 
 export const publish = globalTopic.publish.bind(globalTopic);
 export const subscribe = globalTopic.subscribe.bind(globalTopic);
+export const unsubscribe = globalTopic.unsubscribe.bind(globalTopic);
 export const subscribeOnce = globalTopic.subscribeOnce.bind(globalTopic);
 export const unsubscribeAll = globalTopic.unsubscribeAll.bind(globalTopic);
