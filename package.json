@@ -52,6 +52,7 @@
   "homepage": "https://github.com/enegixinc/events#readme",
   "dependencies": {
     "eventemitter3": "^5.0.1",
+    "ts-node": "^10.9.2",
     "tslib": "^2.6.2"
   }
 }
