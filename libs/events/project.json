@@ -15,16 +15,12 @@
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
-      "outputs": [
-        "{options.outputPath}"
-      ],
+      "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/libs/events",
         "main": "libs/events/src/index.ts",
         "tsConfig": "libs/events/tsconfig.lib.json",
-        "assets": [
-          "libs/events/*.md"
-        ]
+        "assets": ["libs/events/*.md"]
       }
     },
     "nx-release-publish": {
@@ -34,9 +30,7 @@
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": [
-        "{options.reportsDirectory}"
-      ],
+      "outputs": ["{options.reportsDirectory}"],
       "options": {
         "reportsDirectory": "../../coverage/libs/events"
       }
