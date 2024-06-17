@@ -1,91 +1,5 @@
 import { EventEmitter } from 'eventemitter3';
-
-function logMetadata(
-  target: any,
-  propertyKey: string | symbol,
-  descriptor: PropertyDescriptor
-) {
-  const originalMethod = descriptor.value;
-
-  descriptor.value = function (...args: any[]) {
-    const stackTrace = getStackTrace();
-    const callerInfo = stackTrace[1] || {
-      functionName: 'No caller info',
-      fileName: 'Unknown',
-      lineNumber: 0,
-      columnNumber: 0,
-    }; // Index 1 usually points to the caller
-
-    console.log(`Function: ${propertyKey.toString()}`);
-    console.log(`Called by: ${callerInfo.functionName}`);
-    console.log(
-      `Caller location: ${callerInfo.fileName}:${callerInfo.lineNumber}:${callerInfo.columnNumber}`
-    );
-    console.log(`Function location: ${propertyKey.toString()}`);
-
-    return originalMethod.apply(this, args);
-  };
-
-  return descriptor;
-}
-
-function getStackTrace(): StackFrame[] {
-  const error = new Error();
-  const stack = error.stack || '';
-  const stackFrames = stack
-    .split('\n')
-    .map((line) => line.trim())
-    .slice(1); // Skip the first line (Error message)
-
-  return stackFrames
-    .map((frame) => parseStackFrame(frame))
-    .filter((frame): frame is StackFrame => frame !== null);
-}
-
-function parseStackFrame(frame: string): StackFrame | null {
-  const framePattern = /at\s+(.*?)\s+\((.*?):(\d+):(\d+)\)/;
-  const match = frame.match(framePattern);
-
-  if (match) {
-    const [, functionName, fileName, lineNumber, columnNumber] = match;
-    return {
-      functionName,
-      fileName,
-      lineNumber: parseInt(lineNumber, 10),
-      columnNumber: parseInt(columnNumber, 10),
-    };
-  }
-  return null;
-}
-
-interface StackFrame {
-  functionName: string;
-  fileName: string;
-  lineNumber: number;
-  columnNumber: number;
-}
-
-function logFunction(fn: Function): Function {
-  return function (...args: any[]) {
-    const stackTrace = getStackTrace();
-    const callerInfo = stackTrace[1] || {
-      functionName: 'No caller info',
-      fileName: 'Unknown',
-      lineNumber: 0,
-      columnNumber: 0,
-    }; // Index 1 usually points to the caller
-
-    console.log(`Function: ${fn.name || 'anonymous function'}`);
-    console.log(`Called by: ${callerInfo.functionName}`);
-    console.log(
-      `Caller location: ${callerInfo.fileName}:${callerInfo.lineNumber}:${callerInfo.columnNumber}`
-    );
-    console.log(`Function location: ${fn.name || 'anonymous function'}`);
-
-    // @ts-ignore
-    return fn.apply(this, args);
-  };
-}
+import { VueInfo } from '../utils/info';
 
 class EventsManager<T> {
   emitter: EventEmitter;
@@ -96,7 +10,9 @@ class EventsManager<T> {
   }
 
   publish(event: string, data?: T) {
-    console.trace('publish called');
+    const vueInfo = new VueInfo();
+    console.log('publisher: ', vueInfo.filePath);
+
     this.emitter.emit(event, data);
     console.log(
       `Published '${event}' event with data: ${JSON.stringify(data)}`
@@ -107,7 +23,9 @@ class EventsManager<T> {
     event: string | string[],
     callback: (data: ExpectedData) => void
   ) => {
-    console.trace('subscribe called');
+    const vue = new VueInfo();
+    console.log('subscriber: ', vue.componentName);
+
     const isMultipleEvents = Array.isArray(event);
     const _callback = this.constructCallback(callback);
 
