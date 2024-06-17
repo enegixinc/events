@@ -1,4 +1,5 @@
 import { EventEmitter } from 'eventemitter3';
+import { TopicType } from './topic';
 
 function Loggable() {
   return function (
@@ -19,7 +20,7 @@ function Loggable() {
   };
 }
 
-class EventsManager<T> {
+export class EventsManager<T> {
   emitter: EventEmitter;
 
   constructor() {
@@ -27,7 +28,7 @@ class EventsManager<T> {
     console.log('EventsManager initialized');
   }
 
-  publish(event: string, data?: T) {
+  publish(event: string, data?: unknown) {
     this.emitter.emit(event, data);
     console.log(
       `Published '${event}' event with data: ${JSON.stringify(data)}`
