@@ -1,31 +1,55 @@
 import { EventEmitter } from 'eventemitter3';
 import { VueInfo } from '../utils/info';
 
-class EventsManager<T> {
+
+
+export type MetaData = {
+  functionName: string;
+  fileUrl: string;
+  relativePath: string;
+  lineNumber: number;
+  columnNumber: number;
+  event: string;
+};
+
+
+
+
+export class EventsManager<T> {
   emitter: EventEmitter;
+  publishers: Map<string, MetaData> = new Map();
+  subscribers: Map<string, Function> = new Map();
+  events: Set<string> = new Set();
+
+  get metadata() {
+    return {
+      eventsCount: this.events.size,
+      subscribersCount: this.subscribers.size,
+      publishersCount: this.publishers.size,
+    }
+  }
+
 
   constructor() {
     this.emitter = new EventEmitter();
     console.log('EventsManager initialized');
   }
 
-  publish(event: string, data?: T) {
-    const vueInfo = new VueInfo();
-    console.log('publisher: ', vueInfo.filePath);
 
+
+  publish(event: string, data?: T) {
+    this.publishers.set(event, {
+      ...new VueInfo().metaData,
+      event,
+    });
     this.emitter.emit(event, data);
-    console.log(
-      `Published '${event}' event with data: ${JSON.stringify(data)}`
-    );
+    console.log(`Published '${event}' event with data: ${JSON.stringify(data)}`);
   }
 
   subscribe = <ExpectedData>(
     event: string | string[],
     callback: (data: ExpectedData) => void
   ) => {
-    const vue = new VueInfo();
-    console.log('subscriber: ', vue.componentName);
-
     const isMultipleEvents = Array.isArray(event);
     const _callback = this.constructCallback(callback);
 
@@ -41,6 +65,11 @@ class EventsManager<T> {
     callback: (data: ExpectedData) => void,
     once: boolean = false
   ) {
+    // const vue = new VueInfo();
+    // console.log('subscriber: ', vue.componentName);
+    // console.log('subscriber metadata: ', vue.metaData);
+
+    this.subscribers.set(event, callback);
     if (once) this.emitter.once(event, callback);
     else this.emitter.on(event, callback);
     console.log(`Subscribed to event '${event}'`);
@@ -78,7 +107,7 @@ class EventsManager<T> {
   }
 }
 
-const globalTopic = new EventsManager();
+export const globalTopic = new EventsManager();
 
 export const publish = globalTopic.publish.bind(globalTopic);
 export const subscribe = globalTopic.subscribe.bind(globalTopic);

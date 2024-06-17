@@ -1,4 +1,5 @@
 import { ComponentInternalInstance, getCurrentInstance } from 'vue';
+import { ErrorStack } from '../stack';
 
 export class VueInfo {
   private instance: ComponentInternalInstance | null;
@@ -13,5 +14,10 @@ export class VueInfo {
 
   get componentName() {
     return this.instance?.type.__name;
+  }
+
+  get metaData() {
+    const stack = new ErrorStack();
+    return stack.callerMetaData;
   }
 }
