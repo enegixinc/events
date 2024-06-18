@@ -1,5 +1,5 @@
-import { Topic } from './topic';
 import { describe, expect, test, vitest } from 'vitest';
+import { Topic } from '@enegix/events';
 
 describe('Topic', () => {
   test('Create Topic', () => {
