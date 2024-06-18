@@ -1,4 +1,3 @@
-// Mock console.log to prevent output during testing
 import { publish, subscribe, unsubscribeAll } from './core';
 import { expect, MockInstance, test, vitest } from 'vitest';
 
