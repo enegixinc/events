@@ -1,6 +1,6 @@
 {
   "name": "@enegix/events",
-  "version": "0.1.4",
+  "version": "0.2.4",
   "license": "MIT",
   "type": "commonjs",
   "main": "./src/index.js",
@@ -9,7 +9,7 @@
     "tslib": "^2.6.2",
     "eventemitter3": "^5.0.1"
   },
-  "description": "<a alt=\"Nx logo\" href=\"https://nx.dev\" target=\"_blank\" rel=\"noreferrer\"><img src=\"https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png\" width=\"45\"></a>",
+  "description": "A TypeScript package for managing events using eventemitter3, providing a simple and efficient way to publish, subscribe, and unsubscribe from events.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/enegixinc/events.git"
