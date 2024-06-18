@@ -1,5 +1,4 @@
 import { EventEmitter } from 'eventemitter3';
-import { TopicType } from './topic';
 
 function Loggable() {
   return function (
@@ -29,10 +28,10 @@ export class EventsManager<T> {
   }
 
   publish(event: string, data?: unknown) {
-    this.emitter.emit(event, data);
     console.log(
       `Published '${event}' event with data: ${JSON.stringify(data)}`
     );
+    this.emitter.emit(event, data);
   }
 
   subscribe = <ExpectedData>(
@@ -42,31 +41,12 @@ export class EventsManager<T> {
     const isMultipleEvents = Array.isArray(event);
     const _callback = this.constructCallback(callback);
 
-    if (isMultipleEvents)
+    if (isMultipleEvents) {
       event.forEach((event) => this._subscribe(event, _callback));
-    else this._subscribe(event, _callback);
+    } else this._subscribe(event, _callback);
 
     return { unsubscribe: () => this.unsubscribe(event) };
   };
-
-  private _subscribe<ExpectedData>(
-    event: string,
-    callback: (data: ExpectedData) => void,
-    once: boolean = false
-  ) {
-    if (once) this.emitter.once(event, callback);
-    else this.emitter.on(event, callback);
-    console.log(`Subscribed to event '${event}'`);
-  }
-
-  private constructCallback<ExpectedData>(
-    callback: (data: ExpectedData) => void
-  ) {
-    return (receivedData: ExpectedData) => {
-      callback(receivedData);
-      console.log(`Received data: ${JSON.stringify(receivedData)}`);
-    };
-  }
 
   unsubscribe(event: string | string[]) {
     if (Array.isArray(event)) {
@@ -88,6 +68,29 @@ export class EventsManager<T> {
 
   unsubscribeAll() {
     this.emitter.removeAllListeners();
+  }
+
+  private _subscribe<ExpectedData>(
+    event: string,
+    callback: (data: ExpectedData) => void,
+    once: boolean = false
+  ) {
+    if (once) this.emitter.once(event, callback);
+    else this.emitter.on(event, callback);
+    console.log(`Subscribed to event '${event}'`);
+  }
+
+  private constructCallback<ExpectedData>(
+    callback: (data: ExpectedData) => void
+  ) {
+    return (receivedData: ExpectedData) => {
+      console.log(
+        `Received data: ${JSON.stringify(receivedData)}, and calling callback ${
+          callback.name
+        }`
+      );
+      callback(receivedData);
+    };
   }
 }
 
