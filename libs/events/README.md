@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Events package provides a simple and efficient way to manage events in your TypeScript applications. It leverages `eventemitter3` for event management and includes decorators for logging function calls. This package allows for publishing, subscribing, and unsubscribing from events, with additional support for handling events once and managing typed events.
+The Events package provides a simple and type-safe way to publish and subscribe to events in your application. It allows you to encapsulate events in topics, ensuring that events do not interfere with other topics.
 
 ## Features
 
