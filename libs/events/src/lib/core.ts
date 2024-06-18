@@ -75,9 +75,10 @@ export class EventsManager<T> {
     callback: (data: ExpectedData) => void,
     once: boolean = false
   ) {
+    console.log(`Subscribed to event '${event}'`);
+
     if (once) this.emitter.once(event, callback);
     else this.emitter.on(event, callback);
-    console.log(`Subscribed to event '${event}'`);
   }
 
   private constructCallback<ExpectedData>(

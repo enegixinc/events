@@ -38,6 +38,7 @@ describe('Topic', () => {
       CREATED: UserInfo;
       DELETED: Pick<UserInfo, 'id'>;
       UPDATE: 'SUCCESS' | 'FAILED';
+      3: 'number';
     };
     const userTopic = new Topic<UserTopic>();
 
