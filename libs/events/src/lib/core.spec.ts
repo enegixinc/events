@@ -1,4 +1,5 @@
 import { publish, subscribe, unsubscribeAll } from './core';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { expect, MockInstance, test, vitest } from 'vitest';
 
 describe('subscribe function', () => {
@@ -93,5 +94,16 @@ describe('subscribe function', () => {
     subscribe<number>('number', (data) => {
       expect(data).toBe(123);
     });
+  });
+
+  test('publish event with no data', () => {
+    const callback = console.log;
+    const { unsubscribe } = subscribe('event1', callback);
+
+    publish('event1');
+
+    expect(callbackSpy).toHaveBeenCalledWith(
+      "Published 'event1' event with data: undefined"
+    );
   });
 });

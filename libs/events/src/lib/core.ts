@@ -1,3 +1,4 @@
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { EventEmitter } from 'eventemitter3';
 
 function Loggable() {
@@ -60,7 +61,7 @@ export class EventsManager<T> {
     }
   }
 
-  subscribeOnce(event: string, callback: (data: T) => void) {
+  subscribeOnce(event: string, callback: (data?: T) => void) {
     const _callback = this.constructCallback(callback);
     this._subscribe(event, _callback, true);
     return { unsubscribe: () => this.unsubscribe(event) };
@@ -73,7 +74,7 @@ export class EventsManager<T> {
   private _subscribe<ExpectedData>(
     event: string,
     callback: (data: ExpectedData) => void,
-    once: boolean = false
+    once = false
   ) {
     console.log(`Subscribed to event '${event}'`);
 
