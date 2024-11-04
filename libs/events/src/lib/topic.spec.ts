@@ -1,5 +1,6 @@
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { describe, expect, test, vitest } from 'vitest';
-import { Topic } from '@enegix/events';
+import { Topic } from './topic';
 
 describe('Topic', () => {
   test('Create Topic', () => {
@@ -68,5 +69,39 @@ describe('Topic', () => {
       email: 'email',
     });
     expect(callback3).toHaveBeenNthCalledWith(2, { id: '1' });
+  });
+
+  test('Nested Topics', () => {
+    const userTopic = new Topic<{
+      CREATED: { id: string; name: string; email: string };
+      DELETED: { id: string };
+    }>();
+    const postTopic = new Topic<{
+      CREATED: { id: string; title: string; content: string };
+      DELETED: { id: string };
+    }>();
+
+    const callback = vitest.fn();
+    userTopic.subscribe('CREATED', callback);
+    postTopic.subscribe('CREATED', callback);
+
+    userTopic.publish('CREATED', { id: '1', name: 'John', email: 'email' });
+    postTopic.publish('CREATED', {
+      id: '1',
+      title: 'Post',
+      content: 'Content',
+    });
+
+    expect(callback).toHaveBeenCalledTimes(2);
+    expect(callback).toHaveBeenNthCalledWith(1, {
+      id: '1',
+      name: 'John',
+      email: 'email',
+    });
+    expect(callback).toHaveBeenNthCalledWith(2, {
+      id: '1',
+      title: 'Post',
+      content: 'Content',
+    });
   });
 });
