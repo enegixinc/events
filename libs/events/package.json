@@ -1,6 +1,6 @@
 {
   "name": "@enegix/events",
-  "version": "0.2.6",
+  "version": "1.2.6",
   "license": "MIT",
   "type": "commonjs",
   "main": "./src/index.js",
