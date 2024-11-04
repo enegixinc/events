@@ -1,33 +1,16 @@
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { EventEmitter } from 'eventemitter3';
+import { LogMethod } from './topic';
 
-function Loggable() {
-  return function (
-    target: any,
-    propertyKey: string,
-    descriptor: PropertyDescriptor
-  ) {
-    const originalMethod = descriptor.value;
-
-    descriptor.value = function (...args: any[]) {
-      console.log(`Calling '${propertyKey}' with arguments: ${args}`);
-      const result = originalMethod.apply(this, args);
-      console.log(`'${propertyKey}' returned: ${result}`);
-      return result;
-    };
-
-    return descriptor;
-  };
-}
-
-export class EventsManager<T> {
+export abstract class EventsManager<T> {
   emitter: EventEmitter;
 
-  constructor() {
+  protected constructor() {
     this.emitter = new EventEmitter();
     console.log('EventsManager initialized');
   }
 
+  @LogMethod
   publish(event: string, data?: unknown) {
     console.log(
       `Published '${event}' event with data: ${JSON.stringify(data)}`
@@ -35,10 +18,11 @@ export class EventsManager<T> {
     this.emitter.emit(event, data);
   }
 
-  subscribe = <ExpectedData>(
+  @LogMethod
+  subscribe<ExpectedData>(
     event: string | string[],
     callback: (data: ExpectedData) => void
-  ) => {
+  ) {
     const isMultipleEvents = Array.isArray(event);
     const _callback = this.constructCallback(callback);
 
@@ -47,8 +31,9 @@ export class EventsManager<T> {
     } else this._subscribe(event, _callback);
 
     return { unsubscribe: () => this.unsubscribe(event) };
-  };
+  }
 
+  @LogMethod
   unsubscribe(event: string | string[]) {
     if (Array.isArray(event)) {
       event.forEach((event) => {
@@ -61,12 +46,14 @@ export class EventsManager<T> {
     }
   }
 
+  @LogMethod
   subscribeOnce(event: string, callback: (data?: T) => void) {
     const _callback = this.constructCallback(callback);
     this._subscribe(event, _callback, true);
     return { unsubscribe: () => this.unsubscribe(event) };
   }
 
+  @LogMethod
   unsubscribeAll() {
     this.emitter.removeAllListeners();
   }
@@ -95,11 +82,3 @@ export class EventsManager<T> {
     };
   }
 }
-
-const globalTopic = new EventsManager();
-
-export const publish = globalTopic.publish.bind(globalTopic);
-export const subscribe = globalTopic.subscribe.bind(globalTopic);
-export const unsubscribe = globalTopic.unsubscribe.bind(globalTopic);
-export const subscribeOnce = globalTopic.subscribeOnce.bind(globalTopic);
-export const unsubscribeAll = globalTopic.unsubscribeAll.bind(globalTopic);
