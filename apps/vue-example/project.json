@@ -1,0 +1,8 @@
+{
+  "name": "vue-example",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/vue-example/src",
+  "// targets": "to see all targets run: nx show project vue-example --web",
+  "targets": {}
+}

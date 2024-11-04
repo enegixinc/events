@@ -1,4 +1,4 @@
-import { EventsManager } from '@enegix/events';
+import { EventsManager } from './core';
 
 export interface TopicType {
   [event: string]: unknown;
