@@ -2,6 +2,7 @@
 import { GreetingTopic } from './events';
 import { ref } from 'vue';
 import GreetingLog from './Greeting-Log.vue';
+import Visual from './visual.vue';
 
 const user = ref<string>('John');
 </script>
@@ -16,10 +17,8 @@ const user = ref<string>('John');
       </button>
     </div>
 
-    <button @click="GreetingTopic.publish('GREET_WORLD', {})">
-      Greet World
-    </button>
-
     <GreetingLog />
+
+    <visual />
   </div>
 </template>

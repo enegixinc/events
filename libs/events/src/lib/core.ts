@@ -1,24 +1,67 @@
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { EventEmitter } from 'eventemitter3';
 
-function Loggable() {
-  return function (
-    target: any,
-    propertyKey: string,
-    descriptor: PropertyDescriptor
-  ) {
-    const originalMethod = descriptor.value;
+class EventsVisualizationService {
+  private events: Array<{
+    method: string;
+    event: string;
+    type: string;
+    file: string | undefined;
+    line: number | undefined;
+    component: string;
+  }> = [];
 
-    descriptor.value = function (...args: any[]) {
-      console.log(`Calling '${propertyKey}' with arguments: ${args}`);
-      const result = originalMethod.apply(this, args);
-      console.log(`'${propertyKey}' returned: ${result}`);
-      return result;
-    };
+  logEvent(eventData: {
+    method: string;
+    event: string;
+    type: string;
+    file: string | undefined;
+    line: number | undefined;
+    component: string;
+  }) {
+    this.events.push(eventData);
+  }
 
-    return descriptor;
-  };
+  getEvents() {
+    return this.events;
+  }
 }
+
+// export const eventsVisualizationService = new EventsVisualizationService();
+
+// function logMethod(target: any, key: string, descriptor: PropertyDescriptor) {
+//   const originalMethod = descriptor.value;
+//
+//   descriptor.value = function (...args: any[]) {
+//     const stack = new Error().stack?.split('\n')[2].trim();
+//     const match = stack.match(/\(([^)]+):(\d+):\d+\)/);
+//     const file = match?.[1];
+//     const line = match?.[2];
+//
+//     // Get Vue component name if available
+//     const vueInstance = this as any;
+//     const componentName = vueInstance?.$options?.name || 'Unknown Component';
+//
+//     // Log or store metadata
+//     const metadata = {
+//       method: key,
+//       event: args[0], // Assuming the first argument is the event name
+//       type: key === 'publish' ? 'Publisher' : 'Subscriber',
+//       file,
+//       line: Number(line),
+//       component: componentName,
+//     };
+//
+//     // Log to console or a visualization service
+//     console.log(metadata);
+//     eventsVisualizationService.logEvent(metadata);
+//
+//     // Execute the original method
+//     return originalMethod.apply(this, args);
+//   };
+//
+//   return descriptor;
+// }
 
 export class EventsManager<T> {
   emitter: EventEmitter;
@@ -28,6 +71,7 @@ export class EventsManager<T> {
     console.log('EventsManager initialized');
   }
 
+  // @logMethod
   publish(event: string, data?: unknown) {
     console.log(
       `Published '${event}' event with data: ${JSON.stringify(data)}`

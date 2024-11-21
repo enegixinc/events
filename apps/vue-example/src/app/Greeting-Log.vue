@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { GreetingTopic } from './events';
 import { ref } from 'vue';
+import { greetAll } from './actions';
 
 const log = ref<string[]>([]);
 
@@ -11,10 +12,16 @@ GreetingTopic.subscribe('GREET_USER', (user: string) => {
 GreetingTopic.subscribe('GREET_WORLD', () => {
   log.value = [...log.value, 'Hello, World!'];
 });
+
+console.log('log', GreetingTopic.getEvents());
 </script>
 
 <template>
   <div>
+    <button @click="GreetingTopic.publish('GREET_WORLD')">Greet World</button>
+
+    <button @click="greetAll">Greet All</button>
+
     <h2>Log</h2>
     <ul>
       <li v-for="entry in log" :key="entry">{{ entry }}</li>
