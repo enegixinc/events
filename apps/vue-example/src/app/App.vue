@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import { GreetingTopic } from './events';
 import { ref } from 'vue';
-import GreetingLog from './Greeting-Log.vue';
 import Visual from './visual.vue';
+import { useTopicLogger } from '@enegix/events';
 
 const user = ref<string>('John');
+
+const { log } = useTopicLogger(GreetingTopic);
 </script>
 
 <template>
@@ -16,9 +18,7 @@ const user = ref<string>('John');
         Greet User
       </button>
     </div>
-
-    <GreetingLog />
-
-    <visual />
+    {{ log }}
+    <visual :events="log" />
   </div>
 </template>

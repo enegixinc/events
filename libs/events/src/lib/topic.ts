@@ -1,113 +1,89 @@
 import { EventsManager } from './core';
+import { TopicLogger } from './topicLogger';
 
 export interface TopicType {
   [event: string]: unknown;
 }
 
 export class Topic<T extends TopicType> {
-  registeredEvents: (keyof T)[];
+  public logger: TopicLogger;
   private eventsManager: EventsManager<T>;
 
   constructor() {
     this.eventsManager = new EventsManager<T>();
-    this.registeredEvents = Object.keys({} as T as TopicType) as (keyof T)[];
+    this.logger = new TopicLogger();
   }
 
-  getEvents(): (keyof T)[] {
-    return this.registeredEvents;
-  }
-
-  @logMethod
+  @logMethod(
+    'publish',
+    'Topic Logger',
+    (instance: Topic<any>) => instance.logger
+  )
   publish<E extends keyof T>(event: E, data?: T[E]) {
     this.eventsManager.publish(event as any, data);
   }
 
-  @logMethod
+  @logMethod(
+    'subscribe',
+    'Topic Logger',
+    (instance: Topic<any>) => instance.logger
+  )
   subscribe<E extends keyof T>(event: E | E[], callback: (data: T[E]) => void) {
     return this.eventsManager.subscribe(event as any, callback);
   }
 
-  @logMethod
+  @logMethod(
+    'unsubscribeAll',
+    'Topic Logger',
+    (instance: Topic<any>) => instance.logger
+  )
   unsubscribeAll() {
     this.eventsManager.unsubscribeAll();
   }
 }
 
-function logMethod(target: any, key: string, descriptor: PropertyDescriptor) {
-  const originalMethod = descriptor.value;
-  descriptor.value = function (...args: any[]) {
-    const file = getFileName(new Error()?.stack);
-    console.log(`logMethod Method ${key}   -  ` + file);
+function logMethod(
+  methodType: string,
+  description: string,
+  getLogger: (instance: any) => TopicLogger
+) {
+  return function (target: any, key: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
 
-    // console.log(`Method ${key} called with args:`, args);
-    const result = originalMethod.apply(this, args);
-    // console.log(`Method ${key} result:`, result);
-    return result;
+    descriptor.value = function (...args: any[]) {
+      const logger = getLogger(this); // Get the logger dynamically
+      const file = getFileName(new Error()?.stack);
+      const event = args[0]?.toString() || 'unknown event';
+
+      // Log the method call
+      console.log(
+        `[${description}] Method ${key} called for event: ${event}, file: ${file}`
+      );
+      if (methodType === 'publish') {
+        logger.logPublish(key, event);
+      } else if (methodType === 'subscribe') {
+        logger.logSubscribe(key, event);
+      } else if (methodType === 'unsubscribeAll') {
+        logger.logPublish(key, 'all events');
+      }
+
+      try {
+        const result = originalMethod.apply(this, args);
+        logger.logSuccess(key, event);
+        return result;
+      } catch (error) {
+        logger.logError(key, event, error);
+        throw error;
+      }
+    };
+
+    return descriptor;
   };
-  return descriptor;
 }
 
 const getFileName = (stack?: string) => {
-  if (!stack) return;
-
-  // console.log(stack);
+  if (!stack) return 'unknown';
   const lines = stack.split('\n');
-  return lines[2];
+  const match = lines[2]?.match(/\(([^)]+):\d+:\d+\)/);
+  return match?.[1] || 'unknown';
 };
-
-// export class TopicLogger {
-//   private publishers: { [topic: string]: string } = {};
-//   private subscribers: { [topic: string]: string } = {};
-//   private topic: Topic<TopicType>;
-//
-//   constructor(private readonly _topic: Topic<TopicType>) {
-//     this.topic = _topic;
-//   }
-//
-//   addPublisher(event: string, publisher: string) {
-//     this.publishers[event] = publisher;
-//   }
-//
-//   addSubscriber(event: string, subscriber: string) {
-//     this.subscribers[event] = subscriber;
-//   }
-//
-//   getPublishers() {
-//     return this.publishers;
-//   }
-//
-//   getSubscribers() {
-//     return this.subscribers;
-//   }
-// }
-//
-// export class TopicsManager {
-//   private topics: { [topic: string]: Topic<TopicType> } = {};
-//
-//   createTopic<T extends TopicType>(topic: string): Topic<T> {
-//     if (this.topics[topic]) {
-//       throw new Error(`Topic '${topic}' already exists`);
-//     }
-//
-//     const newTopic = new Topic<T>();
-//     this.topics[topic] = newTopic;
-//
-//     return newTopic;
-//   }
-//
-//   getTopic<T extends TopicType>(topic: string): Topic<T> {
-//     if (!this.topics[topic]) {
-//       throw new Error(`Topic '${topic}' does not exist`);
-//     }
-//
-//     return this.topics[topic] as Topic<T>;
-//   }
-//
-//   deleteTopic(topic: string) {
-//     if (!this.topics[topic]) {
-//       throw new Error(`Topic '${topic}' does not exist`);
-//     }
-//
-//     delete this.topics[topic];
-//   }
-// }

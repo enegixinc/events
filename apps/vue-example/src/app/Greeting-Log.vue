@@ -13,7 +13,10 @@ GreetingTopic.subscribe('GREET_WORLD', () => {
   log.value = [...log.value, 'Hello, World!'];
 });
 
-console.log('log', GreetingTopic.getEvents());
+GreetingTopic.subscribe('TEST', () => {
+  console.log('log', GreetingTopic.logger.getLogs());
+});
+console.log('log', GreetingTopic.logger.getLogs());
 </script>
 
 <template>
