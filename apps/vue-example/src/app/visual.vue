@@ -1,6 +1,6 @@
 <template>
   <div class="events-container">
-    <h1 class="page-title">Pub-Sub Pattern Visualization</h1>
+    <h1 class="page-title">Events Visualization</h1>
 
     <div v-for="(topic, index) in topics" :key="index" class="topic">
       <h2 class="topic-title" @click="toggleSection(index)">
