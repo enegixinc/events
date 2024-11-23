@@ -28,12 +28,12 @@
               >
                 <div class="publisher-header">
                   <p>
-                    <strong>File:</strong> {{ publisher.stackTraceLine.file }}
+                    <strong>File:</strong> {{ publisher.originalPosition.file }}
                   </p>
                   <p>
                     <strong>Line:</strong>
-                    {{ publisher.stackTraceLine.lineNumber }}, Column:
-                    {{ publisher.stackTraceLine.column }}
+                    {{ publisher.originalPosition.line }}, Column:
+                    {{ publisher.originalPosition.column }}
                   </p>
                 </div>
                 <div class="publisher-stats">
@@ -46,6 +46,9 @@
                   <p :class="getStatusClass(publisher)">
                     <strong>Error:</strong> {{ publisher.errorCount }}
                   </p>
+                </div>
+                <div>
+                  <VCodeBlock :code="publisher.originalPosition.codeBlock" />
                 </div>
               </div>
             </div>
@@ -62,12 +65,13 @@
               >
                 <div class="subscriber-header">
                   <p>
-                    <strong>File:</strong> {{ subscriber.stackTraceLine.file }}
+                    <strong>File:</strong>
+                    {{ subscriber.originalPosition.file }}
                   </p>
                   <p>
                     <strong>Line:</strong>
-                    {{ subscriber.stackTraceLine.lineNumber }}, Column:
-                    {{ subscriber.stackTraceLine.column }}
+                    {{ subscriber.originalPosition.line }}, Column:
+                    {{ subscriber.originalPosition.column }}
                   </p>
                 </div>
                 <div class="subscriber-stats">
@@ -80,6 +84,9 @@
                   <p :class="getStatusClass(subscriber)">
                     <strong>Error:</strong> {{ subscriber.errorCount }}
                   </p>
+                </div>
+                <div>
+                  <VCodeBlock :code="subscriber.originalPosition.codeBlock" />
                 </div>
               </div>
             </div>
@@ -102,13 +109,16 @@ export default {
   },
   data() {
     return {
-      expandedTopic: null, // Tracks the expanded topic index
+      expandedTopic: 0, // Tracks the expanded topic index
     };
   },
   computed: {
     topics() {
       return this.data.events ? [this.data] : []; // Wrap the data in an array if it's not already
     },
+  },
+  mounted() {
+    this.expandedTopic = 0; // Expand the first topic by default
   },
   methods: {
     toggleSection(index) {
@@ -258,5 +268,22 @@ p {
 .publisher-stats p,
 .subscriber-stats p {
   font-size: 0.85rem;
+}
+
+.code-block {
+  background-color: #f5f5f5;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0;
+  font-family: 'Courier New', Courier, monospace;
+  background-color: #f5f5f5;
+  padding: 10px;
+  border-radius: 5px;
 }
 </style>

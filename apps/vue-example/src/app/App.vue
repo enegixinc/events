@@ -19,7 +19,6 @@ watch(log, (newVal) => console.log(toRaw(newVal)));
         Greet User
       </button>
     </div>
-    {{ log }}
     <pub-sub-visualizer :data="log" />
   </div>
 </template>

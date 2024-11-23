@@ -5,7 +5,7 @@ type Method = {
   type: MethodType;
   eventKey: string;
   data: any;
-  stackTraceLine: StackFrame;
+  originalPosition: OriginalPosition;
 };
 
 type MethodLog = Method & {
@@ -73,7 +73,7 @@ export class TopicLogger {
   ): MethodLog {
     const event = this.getEvent(eventKey);
     const method = event[type].find(
-      (method) => method.stackTraceLine.lineNumber === originalPosition.line
+      (method) => method.originalPosition.line === originalPosition.line
     );
 
     if (method) return method;
@@ -81,11 +81,7 @@ export class TopicLogger {
       type: type === 'publishers' ? 'publisher' : 'subscriber',
       eventKey,
       data: null,
-      stackTraceLine: {
-        file: originalPosition.file,
-        lineNumber: originalPosition.line,
-        column: originalPosition.column,
-      },
+      originalPosition,
       calledCount: 0,
       successCount: 0,
       errorCount: 0,

@@ -57,6 +57,7 @@
   },
   "homepage": "https://github.com/enegixinc/events#readme",
   "dependencies": {
+    "@wdns/vue-code-block": "^2.3.3",
     "eventemitter3": "^5.0.1",
     "source-map": "github:abdelrahman-essawy/source-map",
     "stacktrace-parser": "^0.1.10",
