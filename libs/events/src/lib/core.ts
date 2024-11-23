@@ -54,7 +54,7 @@ class EventsVisualizationService {
 //
 //     // Log to console or a visualization service
 //     console.log(metadata);
-//     eventsVisualizationService.logEvent(metadata);
+//     eventsVisualizationService.logSuccess(metadata);
 //
 //     // Execute the original method
 //     return originalMethod.apply(this, args);

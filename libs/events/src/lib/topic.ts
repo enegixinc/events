@@ -1,89 +1,63 @@
 import { EventsManager } from './core';
 import { TopicLogger } from './topicLogger';
+import * as stackTraceParser from 'stacktrace-parser';
 
 export interface TopicType {
   [event: string]: unknown;
 }
 
+function LogMethod<T extends TopicType>(
+  target: Topic<T>,
+  propertyKey: string,
+  descriptor: PropertyDescriptor
+): void {
+  const originalMethod = descriptor.value;
+
+  descriptor.value = async function (...args: any) {
+    const stack = new Error().stack as string;
+    const parsedStack = stackTraceParser.parse(stack);
+    const caller = parsedStack[1];
+    if (!caller.file || !caller.lineNumber || !caller.column) {
+      throw new Error('Cannot get caller information');
+    }
+
+    const type =
+      originalMethod.name === 'publish' ? 'publishers' : 'subscribers';
+
+    const logger = this.logger as TopicLogger;
+    try {
+      originalMethod.apply(this, args);
+      await logger.logSuccess(type, args[0], caller, args[1]);
+    } catch (error) {
+      // logger.logError(originalMethod, fileName, error);
+    }
+  };
+}
+
+type TopicConfig = {
+  topicName: string;
+};
+
 export class Topic<T extends TopicType> {
   public logger: TopicLogger;
   private eventsManager: EventsManager<T>;
 
-  constructor() {
+  constructor(config: TopicConfig) {
     this.eventsManager = new EventsManager<T>();
-    this.logger = new TopicLogger();
+    this.logger = new TopicLogger(config);
   }
 
-  @logMethod(
-    'publish',
-    'Topic Logger',
-    (instance: Topic<any>) => instance.logger
-  )
+  @LogMethod
   publish<E extends keyof T>(event: E, data?: T[E]) {
-    this.eventsManager.publish(event as any, data);
+    return this.eventsManager.publish(event as any, data);
   }
 
-  @logMethod(
-    'subscribe',
-    'Topic Logger',
-    (instance: Topic<any>) => instance.logger
-  )
+  @LogMethod
   subscribe<E extends keyof T>(event: E | E[], callback: (data: T[E]) => void) {
     return this.eventsManager.subscribe(event as any, callback);
   }
 
-  @logMethod(
-    'unsubscribeAll',
-    'Topic Logger',
-    (instance: Topic<any>) => instance.logger
-  )
   unsubscribeAll() {
     this.eventsManager.unsubscribeAll();
   }
 }
-
-function logMethod(
-  methodType: string,
-  description: string,
-  getLogger: (instance: any) => TopicLogger
-) {
-  return function (target: any, key: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value;
-
-    descriptor.value = function (...args: any[]) {
-      const logger = getLogger(this); // Get the logger dynamically
-      const file = getFileName(new Error()?.stack);
-      const event = args[0]?.toString() || 'unknown event';
-
-      // Log the method call
-      console.log(
-        `[${description}] Method ${key} called for event: ${event}, file: ${file}`
-      );
-      if (methodType === 'publish') {
-        logger.logPublish(key, event);
-      } else if (methodType === 'subscribe') {
-        logger.logSubscribe(key, event);
-      } else if (methodType === 'unsubscribeAll') {
-        logger.logPublish(key, 'all events');
-      }
-
-      try {
-        const result = originalMethod.apply(this, args);
-        logger.logSuccess(key, event);
-        return result;
-      } catch (error) {
-        logger.logError(key, event, error);
-        throw error;
-      }
-    };
-
-    return descriptor;
-  };
-}
-
-const getFileName = (stack?: string) => {
-  if (!stack) return 'unknown';
-  const lines = stack.split('\n');
-  const match = lines[2]?.match(/\(([^)]+):\d+:\d+\)/);
-  return match?.[1] || 'unknown';
-};

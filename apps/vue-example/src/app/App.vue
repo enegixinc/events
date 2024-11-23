@@ -1,12 +1,13 @@
 <script lang="ts" setup>
 import { GreetingTopic } from './events';
-import { ref } from 'vue';
-import Visual from './visual.vue';
+import { ref, toRaw, watch } from 'vue';
 import { useTopicLogger } from '@enegix/events';
+import PubSubVisualizer from './visual.vue';
 
 const user = ref<string>('John');
 
 const { log } = useTopicLogger(GreetingTopic);
+watch(log, (newVal) => console.log(toRaw(newVal)));
 </script>
 
 <template>
@@ -19,6 +20,6 @@ const { log } = useTopicLogger(GreetingTopic);
       </button>
     </div>
     {{ log }}
-    <visual :events="log" />
+    <pub-sub-visualizer :data="log" />
   </div>
 </template>

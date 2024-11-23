@@ -4,7 +4,9 @@ import { Topic } from './topic';
 
 describe('Topic', () => {
   test('Create Topic', () => {
-    const topic = new Topic();
+    const topic = new Topic({
+      topicName: 'Topic',
+    });
     expect(topic).toBeDefined();
     expect(topic).toBeInstanceOf(Topic);
     expect(topic).toHaveProperty('publish');
@@ -13,7 +15,9 @@ describe('Topic', () => {
   });
 
   test('Publish and Subscribe', () => {
-    const topic = new Topic();
+    const topic = new Topic({
+      topicName: 'Topic',
+    });
     const callback = vitest.fn();
     topic.subscribe('event', callback);
     topic.publish('event', 'testData');
@@ -21,9 +25,13 @@ describe('Topic', () => {
   });
 
   test('Publish and subscribe to another topic', () => {
-    const topic = new Topic();
+    const topic = new Topic({
+      topicName: 'Topic',
+    });
     const callback = vitest.fn();
-    const anotherTopic = new Topic();
+    const anotherTopic = new Topic({
+      topicName: 'AnotherTopic',
+    });
     const anotherCallback = vitest.fn();
     topic.subscribe('event', callback);
     anotherTopic.subscribe('event', anotherCallback);
@@ -41,7 +49,9 @@ describe('Topic', () => {
       UPDATE: 'SUCCESS' | 'FAILED';
       3: 'number';
     };
-    const userTopic = new Topic<UserTopic>();
+    const userTopic = new Topic<UserTopic>({
+      topicName: 'UserTopic',
+    });
 
     const callback = vitest.fn();
     userTopic.subscribe('CREATED', callback);
@@ -75,11 +85,15 @@ describe('Topic', () => {
     const userTopic = new Topic<{
       CREATED: { id: string; name: string; email: string };
       DELETED: { id: string };
-    }>();
+    }>({
+      topicName: 'UserTopic',
+    });
     const postTopic = new Topic<{
       CREATED: { id: string; title: string; content: string };
       DELETED: { id: string };
-    }>();
+    }>({
+      topicName: 'PostTopic',
+    });
 
     const callback = vitest.fn();
     userTopic.subscribe('CREATED', callback);

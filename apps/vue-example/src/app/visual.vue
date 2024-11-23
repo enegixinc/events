@@ -1,67 +1,90 @@
 <template>
-  <div class="events-visualizer">
-    <h2>Events Visualizer</h2>
+  <div class="events-container">
+    <h1 class="page-title">Pub-Sub Pattern Visualization</h1>
 
-    <div
-      v-for="(eventData, eventName) in events"
-      :key="eventName"
-      class="event-card"
-    >
-      <h3>{{ eventName }}</h3>
+    <div v-for="(topic, index) in topics" :key="index" class="topic">
+      <h2 class="topic-title" @click="toggleSection(index)">
+        {{ topic.topic }}
+        <span class="toggle-icon">{{
+          expandedTopic === index ? '▼' : '►'
+        }}</span>
+      </h2>
 
-      <div class="event-details">
-        <div class="event-section">
-          <h4>Publishers ({{ eventData.publishers.length }})</h4>
-          <table>
-            <thead>
-              <tr>
-                <th>Method</th>
-                <th>Event</th>
-                <th>Count</th>
-                <th>Success</th>
-                <th>Error</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(publisher, index) in eventData.publishers"
-                :key="index"
+      <div v-show="expandedTopic === index" class="events">
+        <div
+          v-for="(event, eventIndex) in topic.events"
+          :key="eventIndex"
+          class="event"
+        >
+          <h3 class="event-key">{{ event.eventKey }}</h3>
+
+          <div class="event-section">
+            <h4>Publishers</h4>
+            <div v-if="event.publishers.length" class="publishers">
+              <div
+                v-for="(publisher, pubIndex) in event.publishers"
+                :key="pubIndex"
+                class="publisher"
               >
-                <td>{{ publisher.method }}</td>
-                <td>{{ publisher.event }}</td>
-                <td>{{ publisher.count }}</td>
-                <td>{{ publisher.successCount }}</td>
-                <td>{{ publisher.errorCount }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                <div class="publisher-header">
+                  <p>
+                    <strong>File:</strong> {{ publisher.stackTraceLine.file }}
+                  </p>
+                  <p>
+                    <strong>Line:</strong>
+                    {{ publisher.stackTraceLine.lineNumber }}, Column:
+                    {{ publisher.stackTraceLine.column }}
+                  </p>
+                </div>
+                <div class="publisher-stats">
+                  <p :class="getStatusClass(publisher)">
+                    <strong>Called:</strong> {{ publisher.calledCount }}
+                  </p>
+                  <p :class="getStatusClass(publisher)">
+                    <strong>Success:</strong> {{ publisher.successCount }}
+                  </p>
+                  <p :class="getStatusClass(publisher)">
+                    <strong>Error:</strong> {{ publisher.errorCount }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <p v-else>No publishers</p>
+          </div>
 
-        <div class="event-section">
-          <h4>Subscribers ({{ eventData.subscribers.length }})</h4>
-          <table>
-            <thead>
-              <tr>
-                <th>Method</th>
-                <th>Event</th>
-                <th>Count</th>
-                <th>Success</th>
-                <th>Error</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(subscriber, index) in eventData.subscribers"
-                :key="index"
+          <div class="event-section">
+            <h4>Subscribers</h4>
+            <div v-if="event.subscribers.length" class="subscribers">
+              <div
+                v-for="(subscriber, subIndex) in event.subscribers"
+                :key="subIndex"
+                class="subscriber"
               >
-                <td>{{ subscriber.method }}</td>
-                <td>{{ subscriber.event }}</td>
-                <td>{{ subscriber.count }}</td>
-                <td>{{ subscriber.successCount }}</td>
-                <td>{{ subscriber.errorCount }}</td>
-              </tr>
-            </tbody>
-          </table>
+                <div class="subscriber-header">
+                  <p>
+                    <strong>File:</strong> {{ subscriber.stackTraceLine.file }}
+                  </p>
+                  <p>
+                    <strong>Line:</strong>
+                    {{ subscriber.stackTraceLine.lineNumber }}, Column:
+                    {{ subscriber.stackTraceLine.column }}
+                  </p>
+                </div>
+                <div class="subscriber-stats">
+                  <p :class="getStatusClass(subscriber)">
+                    <strong>Called:</strong> {{ subscriber.calledCount }}
+                  </p>
+                  <p :class="getStatusClass(subscriber)">
+                    <strong>Success:</strong> {{ subscriber.successCount }}
+                  </p>
+                  <p :class="getStatusClass(subscriber)">
+                    <strong>Error:</strong> {{ subscriber.errorCount }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <p v-else>No subscribers</p>
+          </div>
         </div>
       </div>
     </div>
@@ -70,59 +93,170 @@
 
 <script>
 export default {
+  name: 'PubSubVisualizer',
   props: {
-    events: {
+    data: {
       type: Object,
       required: true,
+    },
+  },
+  data() {
+    return {
+      expandedTopic: null, // Tracks the expanded topic index
+    };
+  },
+  computed: {
+    topics() {
+      return this.data.events ? [this.data] : []; // Wrap the data in an array if it's not already
+    },
+  },
+  methods: {
+    toggleSection(index) {
+      this.expandedTopic = this.expandedTopic === index ? null : index;
+    },
+    getStatusClass(item) {
+      if (item.errorCount > 0) {
+        return 'status-error';
+      }
+      if (item.successCount > 0) {
+        return 'status-success';
+      }
+      return '';
     },
   },
 };
 </script>
 
 <style scoped>
-.events-visualizer {
-  font-family: Arial, sans-serif;
+.events-container {
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
 }
 
-.event-card {
-  margin-bottom: 2rem;
-  padding: 1rem;
-  border: 1px solid #ccc;
+.page-title {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.topic {
+  border: 1px solid #ddd;
+  margin: 15px 0;
+  padding: 15px;
+  background-color: #f9f9f9;
   border-radius: 8px;
 }
 
-.event-details {
+.topic-title {
+  cursor: pointer;
   display: flex;
-  gap: 2rem;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.toggle-icon {
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.events {
+  margin-top: 10px;
+}
+
+.event {
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  margin-top: 10px;
+}
+
+.event-key {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #2c3e50;
 }
 
 .event-section {
-  width: 45%;
+  margin-top: 20px;
 }
 
-h3,
-h4 {
-  margin: 0 0 10px;
+.publishers,
+.subscribers {
+  margin-left: 20px;
+  padding: 10px 0;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 10px;
-}
-
-th,
-td {
-  padding: 8px;
-  text-align: left;
+.publisher,
+.subscriber {
+  margin-bottom: 15px;
+  padding: 10px;
   border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f7f7f7;
 }
 
-th {
-  background-color: #f4f4f4;
+.publisher-header,
+.subscriber-header {
+  font-size: 0.9rem;
+  color: #555;
 }
 
-td {
-  background-color: #f9f9f9;
+.publisher-stats,
+.subscriber-stats {
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+.status-success {
+  color: green;
+}
+
+.status-error {
+  color: red;
+}
+
+h4 {
+  margin-bottom: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+p {
+  margin: 5px 0;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.page-title {
+  color: #2c3e50;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.topic-title {
+  color: #1abc9c;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.topic-title:hover {
+  color: #16a085;
+}
+
+.publisher-header p,
+.subscriber-header p {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.publisher-stats p,
+.subscriber-stats p {
+  font-size: 0.85rem;
 }
 </style>

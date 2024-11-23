@@ -1,86 +1,95 @@
-type MethodLog = {
-  method: string;
-  topic: string;
-  event: string;
-  count: number;
+import { StackFrame } from 'stacktrace-parser';
+import { getOriginalPosition, OriginalPosition } from './stack';
+
+type Method = {
+  type: MethodType;
+  eventKey: string;
+  data: any;
+  stackTraceLine: StackFrame;
+};
+
+type MethodLog = Method & {
+  calledCount: number;
   successCount: number;
   errorCount: number;
 };
 
+export type MethodType = 'publisher' | 'subscriber';
+
+type TopicLoggerConfig = {
+  topicName: string;
+};
+
+type Event = {
+  eventKey: string;
+  publishers: MethodLog[];
+  subscribers: MethodLog[];
+};
+
 export class TopicLogger {
-  publishers: MethodLog[] = [];
-  subscribers: MethodLog[] = [];
-  events: Record<
-    string,
-    { publishers: MethodLog[]; subscribers: MethodLog[] }
-  > = {};
+  private events: {
+    eventKey: string;
+    publishers: MethodLog[];
+    subscribers: MethodLog[];
+  }[] = [];
 
-  logPublish(method: string, event: string) {
-    this._logEvent('publishers', method, event);
+  constructor(private config: TopicLoggerConfig) {}
+
+  get logs() {
+    return {
+      topic: this.config.topicName,
+      events: this.events,
+    };
   }
 
-  logSubscribe(method: string, event: string) {
-    this._logEvent('subscribers', method, event);
-  }
-
-  logSuccess(method: string, event: string) {
-    this._updateEventCounts(method, event, 'successCount');
-  }
-
-  logError(method: string, event: string, error: any) {
-    console.error(`Error in method ${method} for event ${event}:`, error);
-    this._updateEventCounts(method, event, 'errorCount');
-  }
-
-  getLogs() {
-    return this.events;
-  }
-
-  private _logEvent(
+  async logSuccess(
     type: 'publishers' | 'subscribers',
-    method: string,
-    event: string
+    eventKey: string,
+    callerStack: NonNullable<StackFrame>,
+    data?: any
   ) {
-    const topicLog = this._getOrCreateEventLog(event, type);
-    const existingLog = topicLog.find(
-      (log) => log.method === method && log.event === event
-    );
+    const originalPosition = await getOriginalPosition(callerStack.file, {
+      line: callerStack.lineNumber as number,
+      column: callerStack.column as number,
+    });
 
-    if (existingLog) {
-      existingLog.count++;
-    } else {
-      topicLog.push({
-        method,
-        topic: '',
-        event,
-        count: 1,
-        successCount: 0,
-        errorCount: 0,
-      });
-    }
+    console.log('originalPosition', originalPosition);
+    const method = this.getMethod(type, eventKey, originalPosition);
+    method.calledCount++;
+    method.successCount++;
   }
 
-  private _updateEventCounts(
-    method: string,
-    event: string,
-    countType: 'successCount' | 'errorCount'
-  ) {
-    const allLogs = [...this.publishers, ...this.subscribers];
-    const eventLog = allLogs.find(
-      (log) => log.method === method && log.event === event
-    );
-    if (eventLog) {
-      eventLog[countType]++;
-    }
+  private getEvent(eventKey: string): Event {
+    const event = this.events.find((event) => event.eventKey === eventKey);
+    if (event) return event;
+    this.events.push({ eventKey, publishers: [], subscribers: [] });
+    return this.getEvent(eventKey);
   }
 
-  private _getOrCreateEventLog(
-    event: string,
-    type: 'publishers' | 'subscribers'
-  ) {
-    if (!this.events[event]) {
-      this.events[event] = { publishers: [], subscribers: [] };
-    }
-    return this.events[event][type];
+  private getMethod(
+    type: 'publishers' | 'subscribers',
+    eventKey: string,
+    originalPosition: OriginalPosition
+  ): MethodLog {
+    const event = this.getEvent(eventKey);
+    const method = event[type].find(
+      (method) => method.stackTraceLine.lineNumber === originalPosition.line
+    );
+
+    if (method) return method;
+    event[type].push({
+      type: type === 'publishers' ? 'publisher' : 'subscriber',
+      eventKey,
+      data: null,
+      stackTraceLine: {
+        file: originalPosition.file,
+        lineNumber: originalPosition.line,
+        column: originalPosition.column,
+      },
+      calledCount: 0,
+      successCount: 0,
+      errorCount: 0,
+    });
+    return this.getMethod(type, eventKey, originalPosition);
   }
 }
