@@ -4,6 +4,8 @@ import { createApp } from 'vue';
 import App from './app/App.vue';
 import { createVCodeBlock } from '@wdns/vue-code-block';
 import { VueEventsDevtools } from '../../../libs/events/src/devtools/vue-plugin';
+import { Topic } from '@enegix/events';
+import { GreetingTopic } from './app/events';
 
 const VCodeBlock = createVCodeBlock({
   copyButton: false,
@@ -16,6 +18,12 @@ const app = createApp(App);
 
 app.component('VCodeBlock', VCodeBlock);
 
-VueEventsDevtools.install(app);
+const TestTopic = new Topic({
+  topicName: 'TestTopic',
+});
+
+TestTopic.publish('TestEvent', 'TestPayload');
+
+VueEventsDevtools.install(app, [GreetingTopic, TestTopic]);
 app.use(VCodeBlock);
 app.mount('#root');

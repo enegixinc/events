@@ -1,12 +1,12 @@
 import { setupDevtoolsPlugin } from '@vue/devtools-api';
-import type { App } from 'vue';
+import { App, watch } from 'vue';
+import { Topic } from '../lib/topic';
 import { useTopicLogger } from '../lib/logger-vue';
-import { GreetingTopic } from '../../../../apps/vue-example/src/app/events';
 
 const inspectorId = 'events-vue-devtools';
 const stateType = 'routing properties';
 
-export const setupDevtools = (app: App) => {
+export const setupDevtools = (app: App, topics: Topic<any>[] = []) => {
   setupDevtoolsPlugin(
     {
       id: inspectorId,
@@ -25,21 +25,70 @@ export const setupDevtools = (app: App) => {
         stateFilterPlaceholder: 'Filter events',
       });
 
-      const topicLogger = useTopicLogger(GreetingTopic);
+      const topicsLogger = topics.map(
+        (topic) => useTopicLogger(topic).log.value
+      );
+      const topicsLoggerRef = topics.map((topic) => useTopicLogger(topic));
+
+      topicsLoggerRef.forEach((logger) => {
+        watch(
+          () => logger.log,
+          () => {
+            console.log('Req-rendering devtools');
+            api.sendInspectorState(inspectorId);
+            api.sendInspectorTree(inspectorId);
+          },
+          { immediate: true, deep: true }
+        );
+      });
 
       // Populate the inspector tree with topics and events
       api.on.getInspectorTree((payload) => {
         if (payload.inspectorId === inspectorId) {
-          payload.rootNodes = [topicLogger.log.value].map(
-            ({ events, topic }) => ({
-              id: topic,
-              label: topic,
-              children: events.map((event) => ({
-                id: `${topic}:${event.eventKey}`,
-                label: event.eventKey,
-              })),
-            })
-          );
+          payload.rootNodes = topicsLogger.map(({ events, topic }) => ({
+            id: topic,
+            label: topic,
+            children: events.map((event) => ({
+              id: `${topic}:${event.eventKey}`,
+              label: event.eventKey,
+              tags: [
+                {
+                  label: `${event.publishers.length} publishers`,
+                  textColor: 0x000000,
+                  backgroundColor: 0x00ff00,
+                },
+                {
+                  label: `${event.subscribers.length} subscribers`,
+                  textColor: 0x000000,
+                  backgroundColor: 0x00ffff,
+                },
+              ],
+            })),
+            tags: [
+              {
+                label: `${events.length} events`,
+                textColor: 0x000000,
+                backgroundColor: 0xffcc00,
+              },
+              {
+                label: `${events.reduce(
+                  (acc, event) => acc + event.publishers.length,
+                  0
+                )} publishers`,
+                textColor: 0x000000,
+                backgroundColor: 0x00ff00,
+              },
+              {
+                label: `${events.reduce(
+                  (acc, event) => acc + event.subscribers.length,
+                  0
+                )} subscribers`,
+                textColor: 0x000000,
+                // baby blue
+                backgroundColor: 0x00ffff,
+              },
+            ],
+          }));
         }
       });
 
@@ -47,9 +96,12 @@ export const setupDevtools = (app: App) => {
       api.on.getInspectorState((payload) => {
         if (payload.inspectorId === inspectorId) {
           const [topic, eventKey] = payload.nodeId.split(':');
-          if (topic === topicLogger.log.value.topic) {
-            const event = topicLogger.log.value.events.find(
-              (e) => e.eventKey === eventKey
+          const selectedTopic = topicsLogger.find(
+            (logger) => logger.topic === topic
+          );
+          if (selectedTopic) {
+            const event = selectedTopic.events.find(
+              (event) => event.eventKey === eventKey
             );
 
             if (event) {
