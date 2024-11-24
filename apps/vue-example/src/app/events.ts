@@ -16,10 +16,11 @@ GreetingTopic.subscribe('GREET_WORLD', () => {
   console.log('Hello, World!');
 });
 
-const greetMe = async () => {
-  setInterval(() => {
-    GreetingTopic.publish('GREET_USER', 'ME');
-  }, 1000);
-};
+// const greetMe = async () => {
+//   setInterval(() => {
+//     GreetingTopic.publish('GREET_USER', 'ME');
+//   }, 1000);
+// };
+//
+// greetMe();
 
-greetMe();
