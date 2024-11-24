@@ -19,8 +19,6 @@ const { log } = useTopicLogger(GreetingTopic);
       </button>
     </div>
 
-    {{ log }}
-    <pub-sub-visualizer :data="log" />
     <pub-sub-visualizer :data="log" />
   </div>
 </template>
