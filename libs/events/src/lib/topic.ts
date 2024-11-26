@@ -11,7 +11,7 @@ export class Topic<T extends TopicType> {
     this.eventsManager = new EventsManager<T>();
   }
 
-  publish<E extends keyof T>(event: E, data: T[E]) {
+  publish<E extends keyof T>(event: E, data?: T[E]) {
     // TODO: allow to publish multiple events at the same time
     this.eventsManager.publish(event as any, data);
   }
