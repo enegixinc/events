@@ -1,5 +1,6 @@
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { EventEmitter } from 'eventemitter3';
+import { LogMethod } from './topic';
 
 class EventsVisualizationService {
   private events: Array<{
@@ -71,18 +72,19 @@ export abstract class EventsManager<T> {
     console.log('EventsManager initialized');
   }
 
-  // @logMethod
-  publish(event: string, data?: unknown) {
+  @LogMethod
+  protected publish(event: string, data?: unknown) {
     console.log(
       `Published '${event}' event with data: ${JSON.stringify(data)}`
     );
     this.emitter.emit(event, data);
   }
 
-  subscribe = <ExpectedData>(
+  @LogMethod
+  protected subscribe<ExpectedData>(
     event: string | string[],
     callback: (data: ExpectedData) => void
-  ) => {
+  ) {
     const isMultipleEvents = Array.isArray(event);
     const _callback = this.constructCallback(callback);
 
@@ -91,9 +93,10 @@ export abstract class EventsManager<T> {
     } else this._subscribe(event, _callback);
 
     return { unsubscribe: () => this.unsubscribe(event) };
-  };
+  }
 
-  unsubscribe(event: string | string[]) {
+  @LogMethod
+  protected unsubscribe(event: string | string[]) {
     if (Array.isArray(event)) {
       event.forEach((event) => {
         this.emitter.off(event);
@@ -105,13 +108,15 @@ export abstract class EventsManager<T> {
     }
   }
 
-  subscribeOnce(event: string, callback: (data?: T) => void) {
+  @LogMethod
+  protected subscribeOnce(event: string, callback: (data?: T) => void) {
     const _callback = this.constructCallback(callback);
     this._subscribe(event, _callback, true);
     return { unsubscribe: () => this.unsubscribe(event) };
   }
 
-  unsubscribeAll() {
+  @LogMethod
+  protected unsubscribeAll() {
     this.emitter.removeAllListeners();
   }
 

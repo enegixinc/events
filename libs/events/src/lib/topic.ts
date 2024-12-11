@@ -6,11 +6,12 @@ export interface TopicType {
   [event: string]: unknown;
 }
 
-function LogMethod<T extends TopicType>(
+export function LogMethod<T extends TopicType>(
   target: Topic<T>,
   propertyKey: string,
   descriptor: PropertyDescriptor
 ): void {
+  console.log('LogMethod called', target, propertyKey, descriptor);
   const originalMethod = descriptor.value;
 
   descriptor.value = async function (...args: any) {
@@ -53,10 +54,5 @@ export class Topic<T extends TopicType> extends EventsManager<T> {
       topicName: this.topicName,
       events: [],
     });
-  }
-
-  @LogMethod
-  override publish(event: string, data?: unknown) {
-    super.publish(event, data);
   }
 }
