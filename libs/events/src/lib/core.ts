@@ -1,7 +1,6 @@
-// @ts-nocheck - to bo fixed
-// eslint-disable-next-line @nx/enforce-module-boundaries
 import { EventEmitter } from 'eventemitter3';
-import { LogMethod } from './topic';
+import * as stackTraceParser from 'stacktrace-parser';
+import { useTopicsLoggerStore } from './state';
 
 export class EventsManager<T> {
   emitter: EventEmitter;
@@ -11,31 +10,33 @@ export class EventsManager<T> {
     console.log('EventsManager initialized');
   }
 
-  @LogMethod
   publish(event: string, data?: unknown) {
+    this.logMethod('publish', event, data);
     console.log(
       `Published '${event}' event with data: ${JSON.stringify(data)}`
     );
     this.emitter.emit(event, data);
   }
 
-  @LogMethod
   subscribe<ExpectedData>(
     event: string | string[],
     callback: (data: ExpectedData) => void
   ) {
+    this.logMethod('subscribe', event, callback);
     const isMultipleEvents = Array.isArray(event);
     const _callback = this.constructCallback(callback);
 
     if (isMultipleEvents) {
       event.forEach((event) => this._subscribe(event, _callback));
-    } else this._subscribe(event, _callback);
+    } else {
+      this._subscribe(event, _callback);
+    }
 
     return { unsubscribe: () => this.unsubscribe(event) };
   }
 
-  @LogMethod
   unsubscribe(event: string | string[]) {
+    this.logMethod('unsubscribe', event);
     if (Array.isArray(event)) {
       event.forEach((event) => {
         this.emitter.off(event);
@@ -47,15 +48,15 @@ export class EventsManager<T> {
     }
   }
 
-  @LogMethod
   subscribeOnce(event: string, callback: (data?: T) => void) {
+    this.logMethod('subscribeOnce', event, callback);
     const _callback = this.constructCallback(callback);
     this._subscribe(event, _callback, true);
     return { unsubscribe: () => this.unsubscribe(event) };
   }
 
-  @LogMethod
   unsubscribeAll() {
+    this.logMethod('unsubscribeAll');
     this.emitter.removeAllListeners();
   }
 
@@ -81,5 +82,30 @@ export class EventsManager<T> {
       );
       callback(receivedData);
     };
+  }
+
+  private async logMethod(
+    methodName: string,
+    event?: string | string[],
+    data?: unknown
+  ) {
+    // Skip source map handling in tests
+    if (import.meta.env.MODE === 'test') {
+      return;
+    }
+
+    const stack = new Error().stack as string;
+    const parsedStack = stackTraceParser.parse(stack);
+    const caller = parsedStack[1];
+    if (!caller.file || !caller.lineNumber || !caller.column) {
+      throw new Error('Cannot get caller information');
+    }
+
+    const type = methodName === 'publish' ? 'publishers' : 'subscribers';
+
+    await useTopicsLoggerStore
+      .getState()
+      // @ts-expect-error - no data type
+      .logSuccess(this.topicName, type, event, caller, data);
   }
 }

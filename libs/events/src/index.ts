@@ -2,7 +2,6 @@ import { Topic } from './lib/topic';
 
 export * from './lib/core';
 export * from './lib/topic';
-export * from './lib/topicLogger';
 export * from './devtools/logger-vue';
 
 const globalTopic = new Topic({
