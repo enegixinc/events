@@ -3,7 +3,7 @@
 import { EventEmitter } from 'eventemitter3';
 import { LogMethod } from './topic';
 
-export abstract class EventsManager<T> {
+export class EventsManager<T> {
   emitter: EventEmitter;
 
   protected constructor() {
