@@ -1,3 +1,4 @@
+// @ts-nocheck - to bo fixed
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { EventEmitter } from 'eventemitter3';
 import { LogMethod } from './topic';

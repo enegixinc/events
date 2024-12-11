@@ -7,7 +7,7 @@ export interface TopicType {
 }
 
 export function LogMethod(
-  target: Topic<T>,
+  target: Topic<any>,
   propertyKey: string,
   descriptor: PropertyDescriptor
 ): void {
@@ -29,6 +29,7 @@ export function LogMethod(
       originalMethod.apply(this, args);
       await useTopicsLoggerStore
         .getState()
+        // @ts-expect-error - no data type
         .logSuccess(this.topicName, type, args[0], caller, args[1]);
     } catch (error) {
       // logger.logError(originalMethod, fileName, error);

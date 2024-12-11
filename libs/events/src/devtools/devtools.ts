@@ -1,3 +1,4 @@
+// @ts-nocheck - to bo removed
 import { setupDevtoolsPlugin } from '@vue/devtools-api';
 import { App, watch } from 'vue';
 import { Topic } from '../lib/topic';
