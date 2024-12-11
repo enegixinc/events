@@ -2,68 +2,6 @@
 import { EventEmitter } from 'eventemitter3';
 import { LogMethod } from './topic';
 
-class EventsVisualizationService {
-  private events: Array<{
-    method: string;
-    event: string;
-    type: string;
-    file: string | undefined;
-    line: number | undefined;
-    component: string;
-  }> = [];
-
-  logEvent(eventData: {
-    method: string;
-    event: string;
-    type: string;
-    file: string | undefined;
-    line: number | undefined;
-    component: string;
-  }) {
-    this.events.push(eventData);
-  }
-
-  getEvents() {
-    return this.events;
-  }
-}
-
-// export const eventsVisualizationService = new EventsVisualizationService();
-
-// function logMethod(target: any, key: string, descriptor: PropertyDescriptor) {
-//   const originalMethod = descriptor.value;
-//
-//   descriptor.value = function (...args: any[]) {
-//     const stack = new Error().stack?.split('\n')[2].trim();
-//     const match = stack.match(/\(([^)]+):(\d+):\d+\)/);
-//     const file = match?.[1];
-//     const line = match?.[2];
-//
-//     // Get Vue component name if available
-//     const vueInstance = this as any;
-//     const componentName = vueInstance?.$options?.name || 'Unknown Component';
-//
-//     // Log or store metadata
-//     const metadata = {
-//       method: key,
-//       event: args[0], // Assuming the first argument is the event name
-//       type: key === 'publish' ? 'Publisher' : 'Subscriber',
-//       file,
-//       line: Number(line),
-//       component: componentName,
-//     };
-//
-//     // Log to console or a visualization service
-//     console.log(metadata);
-//     eventsVisualizationService.logSuccess(metadata);
-//
-//     // Execute the original method
-//     return originalMethod.apply(this, args);
-//   };
-//
-//   return descriptor;
-// }
-
 export abstract class EventsManager<T> {
   emitter: EventEmitter;
 
@@ -73,7 +11,7 @@ export abstract class EventsManager<T> {
   }
 
   @LogMethod
-  protected publish(event: string, data?: unknown) {
+  publish(event: string, data?: unknown) {
     console.log(
       `Published '${event}' event with data: ${JSON.stringify(data)}`
     );
@@ -81,7 +19,7 @@ export abstract class EventsManager<T> {
   }
 
   @LogMethod
-  protected subscribe<ExpectedData>(
+  subscribe<ExpectedData>(
     event: string | string[],
     callback: (data: ExpectedData) => void
   ) {
@@ -96,7 +34,7 @@ export abstract class EventsManager<T> {
   }
 
   @LogMethod
-  protected unsubscribe(event: string | string[]) {
+  unsubscribe(event: string | string[]) {
     if (Array.isArray(event)) {
       event.forEach((event) => {
         this.emitter.off(event);
@@ -109,14 +47,14 @@ export abstract class EventsManager<T> {
   }
 
   @LogMethod
-  protected subscribeOnce(event: string, callback: (data?: T) => void) {
+  subscribeOnce(event: string, callback: (data?: T) => void) {
     const _callback = this.constructCallback(callback);
     this._subscribe(event, _callback, true);
     return { unsubscribe: () => this.unsubscribe(event) };
   }
 
   @LogMethod
-  protected unsubscribeAll() {
+  unsubscribeAll() {
     this.emitter.removeAllListeners();
   }
 

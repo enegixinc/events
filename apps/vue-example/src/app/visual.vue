@@ -4,7 +4,7 @@
 
     <div v-for="(topic, index) in topics" :key="index" class="topic">
       <h2 class="topic-title" @click="toggleSection(index)">
-        {{ topic.topic }}
+        {{ topic.topicName }}
         <span class="toggle-icon">{{
           expandedTopic === index ? '▼' : '►'
         }}</span>
@@ -103,7 +103,7 @@ export default {
   name: 'PubSubVisualizer',
   props: {
     data: {
-      type: Object,
+      type: Array,
       required: true,
     },
   },
@@ -114,7 +114,7 @@ export default {
   },
   computed: {
     topics() {
-      return this.data.events ? [this.data] : []; // Wrap the data in an array if it's not already
+      return this.data;
     },
   },
   mounted() {

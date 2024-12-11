@@ -24,12 +24,12 @@ type Event = {
   subscribers: MethodLog[];
 };
 
-type TopicLog = {
+export type TopicLog = {
   topicName: string;
   events: Event[];
 };
 
-type TopicLoggerState = {
+export type TopicLoggerState = {
   topics: Array<TopicLog>;
   logSuccess: (
     topicName: string,

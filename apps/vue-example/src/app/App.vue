@@ -1,12 +1,16 @@
 <script lang="ts" setup>
 import { GreetingTopic } from './events';
-import { ref } from 'vue';
-import { publish, useTopicLogger } from '@enegix/events';
+import { computed, ref, toRaw, watch } from 'vue';
+import { publish } from '@enegix/events';
 import PubSubVisualizer from './visual.vue';
+import { useTopicsLogger } from '../../../../libs/events/src/devtools/vue-topic-logger';
 
 const user = ref<string>('John');
+const logs = computed(() => useTopicsLogger().value.topics);
 
-const { log } = useTopicLogger(GreetingTopic);
+watch(logs, (newLogs) => {
+  console.log('New 232logs:', toRaw(newLogs));
+});
 </script>
 
 <template>
@@ -20,6 +24,6 @@ const { log } = useTopicLogger(GreetingTopic);
       <button @click="publish('GREET_ALL', user)">Greet All</button>
     </div>
 
-    <pub-sub-visualizer :data="log" />
+    <pub-sub-visualizer :data="logs" />
   </div>
 </template>

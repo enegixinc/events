@@ -1,6 +1,6 @@
-import { ref, watch } from 'vue';
+import { reactive, ref } from 'vue';
 import { Topic, TopicType } from '../lib/topic';
-import { useTopicsLoggerStore } from '../lib/state';
+import { TopicLoggerState, useTopicsLoggerStore } from '../lib/state';
 
 /**
  * Hook to log events for a single topic using Zustand store.
@@ -25,41 +25,16 @@ export const useTopicLogger = <T extends TopicType>(topic: Topic<T>) => {
 
 /**
  * Hook to manage logs for multiple topics using Zustand store.
- * @param topics - An array of topics to watch for log changes.
  */
-export const useTopicsLogger = <T extends TopicType>(topics: Topic<T>[]) => {
-  const logs = ref<Array<{ topicName: string; logs: Record<string, unknown> }>>(
-    []
-  );
-
-  // Subscribe to logs for all topics
-  topics.forEach((topic) => {
-    const { log, unsubscribe } = useTopicLogger(topic);
-
-    watch(
-      () => log.value,
-      (newLogs) => {
-        const existingEntry = logs.value.find(
-          (logEntry) => logEntry.topicName === topic.topicName
-        );
-
-        if (existingEntry) {
-          existingEntry.logs = { ...newLogs };
-        } else {
-          logs.value.push({
-            topicName: topic.topicName,
-            logs: { ...newLogs },
-          });
-        }
-      },
-      { immediate: true, deep: true }
-    );
-
-    // Optionally manage unsubscribing if needed
-    topic.unsubscribe = unsubscribe;
+export const useTopicsLogger = () => {
+  const state = reactive<Pick<TopicLoggerState, 'topics'>>({
+    topics: [],
   });
 
-  return {
-    logs,
-  };
+  useTopicsLoggerStore.subscribe(({ topics }) => {
+    console.log('Updating logs for multiple topics');
+    state.topics = topics;
+  });
+
+  return state;
 };

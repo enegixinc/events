@@ -6,7 +6,7 @@ export interface TopicType {
   [event: string]: unknown;
 }
 
-export function LogMethod<T extends TopicType>(
+export function LogMethod(
   target: Topic<T>,
   propertyKey: string,
   descriptor: PropertyDescriptor
