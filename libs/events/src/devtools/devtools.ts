@@ -1,7 +1,7 @@
 import { setupDevtoolsPlugin } from '@vue/devtools-api';
 import { App, watch } from 'vue';
 import { Topic } from '../lib/topic';
-import { useTopicLogger } from '../lib/logger-vue';
+import { useTopicLogger } from './logger-vue';
 
 const inspectorId = 'events-vue-devtools';
 const stateType = 'routing properties';

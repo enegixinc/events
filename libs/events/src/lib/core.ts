@@ -63,10 +63,10 @@ class EventsVisualizationService {
 //   return descriptor;
 // }
 
-export class EventsManager<T> {
+export abstract class EventsManager<T> {
   emitter: EventEmitter;
 
-  constructor() {
+  protected constructor() {
     this.emitter = new EventEmitter();
     console.log('EventsManager initialized');
   }
@@ -139,11 +139,3 @@ export class EventsManager<T> {
     };
   }
 }
-
-const globalTopic = new EventsManager();
-
-export const publish = globalTopic.publish.bind(globalTopic);
-export const subscribe = globalTopic.subscribe.bind(globalTopic);
-export const unsubscribe = globalTopic.unsubscribe.bind(globalTopic);
-export const subscribeOnce = globalTopic.subscribeOnce.bind(globalTopic);
-export const unsubscribeAll = globalTopic.unsubscribeAll.bind(globalTopic);

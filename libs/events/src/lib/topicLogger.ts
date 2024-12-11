@@ -32,6 +32,7 @@ export class TopicLogger {
     publishers: MethodLog[];
     subscribers: MethodLog[];
   }[] = [];
+  private onLogCallbacks: Array<(logs: any) => void> = [];
 
   constructor(private config: TopicLoggerConfig) {}
 
@@ -40,6 +41,19 @@ export class TopicLogger {
       topic: this.config.topicName,
       events: this.events,
     };
+  }
+
+  onLog(
+    callback: (logs: {
+      topic: string;
+      events: {
+        eventKey: string;
+        publishers: MethodLog[];
+        subscribers: MethodLog[];
+      }[];
+    }) => void
+  ) {
+    this.onLogCallbacks.push(callback);
   }
 
   async logSuccess(
@@ -57,6 +71,9 @@ export class TopicLogger {
     const method = this.getMethod(type, eventKey, originalPosition);
     method.calledCount++;
     method.successCount++;
+    method.data = data;
+
+    this.onLogCallbacks.forEach((callback) => callback(this.logs));
   }
 
   private getEvent(eventKey: string): Event {

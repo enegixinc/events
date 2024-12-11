@@ -1,6 +1,6 @@
-import { publish, subscribe, unsubscribeAll } from './core';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { expect, MockInstance, test, vitest } from 'vitest';
+import { publish, subscribe, unsubscribeAll } from '../index';
 
 describe('subscribe function', () => {
   let callbackSpy: MockInstance;

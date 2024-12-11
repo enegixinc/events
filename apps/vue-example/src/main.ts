@@ -22,6 +22,8 @@ const TestTopic = new Topic();
 
 TestTopic.publish('TestEvent', 'TestPayload');
 
-VueEventsDevtools.install(app, [GreetingTopic, TestTopic]);
+const GhostTopic = new Topic();
+
+VueEventsDevtools.install(app, [GreetingTopic]);
 app.use(VCodeBlock);
 app.mount('#root');

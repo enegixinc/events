@@ -1,6 +1,6 @@
-import { EventsManager } from './core';
-import { TopicLogger } from './topicLogger';
 import * as stackTraceParser from 'stacktrace-parser';
+import { useTopicsLoggerStore } from './state';
+import { EventsManager } from './core';
 
 export interface TopicType {
   [event: string]: unknown;
@@ -24,10 +24,11 @@ function LogMethod<T extends TopicType>(
     const type =
       originalMethod.name === 'publish' ? 'publishers' : 'subscribers';
 
-    const logger = this.logger as TopicLogger;
     try {
       originalMethod.apply(this, args);
-      await logger.logSuccess(type, args[0], caller, args[1]);
+      await useTopicsLoggerStore
+        .getState()
+        .logSuccess(this.topicName, type, args[0], caller, args[1]);
     } catch (error) {
       // logger.logError(originalMethod, fileName, error);
     }
@@ -38,32 +39,24 @@ type TopicConfig = {
   topicName: string;
 };
 
-export class Topic<T extends TopicType> {
+export class Topic<T extends TopicType> extends EventsManager<T> {
   public topicName: string;
-  public logger: TopicLogger;
-  private eventsManager: EventsManager<T>;
 
   constructor(
     config: TopicConfig = {
-      topicName: Math.random().toString(36).substring(7),
+      topicName: `Topic-${useTopicsLoggerStore.getState().topics.length}`,
     }
   ) {
+    super();
     this.topicName = config.topicName;
-    this.eventsManager = new EventsManager<T>();
-    this.logger = new TopicLogger(config);
+    useTopicsLoggerStore.getState().topics.push({
+      topicName: this.topicName,
+      events: [],
+    });
   }
 
   @LogMethod
-  publish<E extends keyof T>(event: E, data?: T[E]) {
-    return this.eventsManager.publish(event as any, data);
-  }
-
-  @LogMethod
-  subscribe<E extends keyof T>(event: E | E[], callback: (data: T[E]) => void) {
-    return this.eventsManager.subscribe(event as any, callback);
-  }
-
-  unsubscribeAll() {
-    this.eventsManager.unsubscribeAll();
+  override publish(event: string, data?: unknown) {
+    super.publish(event, data);
   }
 }

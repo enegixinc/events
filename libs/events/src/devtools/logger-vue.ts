@@ -1,28 +1,30 @@
-import { Topic, TopicType } from './topic';
 import { ref, watch } from 'vue';
+import { Topic, TopicType } from '../lib/topic';
+import { useTopicsLoggerStore } from '../lib/state';
 
 /**
- * Hook to log events for a single topic.
+ * Hook to log events for a single topic using Zustand store.
  * @param topic - The topic to log events for.
  */
 export const useTopicLogger = <T extends TopicType>(topic: Topic<T>) => {
-  const logger = topic.logger;
-  const log = ref({ ...logger.logs });
+  const topicName = topic.topicName;
 
-  // Override the logSuccess method to update the log ref.
-  const originalLogSuccess = logger.logSuccess;
-  logger.logSuccess = async (...args: any[]) => {
-    await originalLogSuccess.apply(logger, args);
-    log.value = { ...logger.logs }; // Ensure a fresh reference to trigger reactivity.
+  // Create a reactive reference to the logs
+  const log = ref(useTopicsLoggerStore.getState());
+
+  // Subscribe to store changes for this topic
+  const unsubscribe = () => {
+    console.log('Unsubscribing from logs for topic:', topicName);
   };
 
   return {
     log,
+    unsubscribe,
   };
 };
 
 /**
- * Hook to manage logs for multiple topics.
+ * Hook to manage logs for multiple topics using Zustand store.
  * @param topics - An array of topics to watch for log changes.
  */
 export const useTopicsLogger = <T extends TopicType>(topics: Topic<T>[]) => {
@@ -30,11 +32,13 @@ export const useTopicsLogger = <T extends TopicType>(topics: Topic<T>[]) => {
     []
   );
 
+  // Subscribe to logs for all topics
   topics.forEach((topic) => {
+    const { log, unsubscribe } = useTopicLogger(topic);
+
     watch(
-      () => useTopicLogger(topic).log.value,
+      () => log.value,
       (newLogs) => {
-        console.log('newLogs', newLogs);
         const existingEntry = logs.value.find(
           (logEntry) => logEntry.topicName === topic.topicName
         );
@@ -50,6 +54,9 @@ export const useTopicsLogger = <T extends TopicType>(topics: Topic<T>[]) => {
       },
       { immediate: true, deep: true }
     );
+
+    // Optionally manage unsubscribing if needed
+    topic.unsubscribe = unsubscribe;
   });
 
   return {
