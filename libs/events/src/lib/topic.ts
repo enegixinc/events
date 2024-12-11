@@ -43,7 +43,11 @@ export class Topic<T extends TopicType> {
   public logger: TopicLogger;
   private eventsManager: EventsManager<T>;
 
-  constructor(config: TopicConfig) {
+  constructor(
+    config: TopicConfig = {
+      topicName: Math.random().toString(36).substring(7),
+    }
+  ) {
     this.topicName = config.topicName;
     this.eventsManager = new EventsManager<T>();
     this.logger = new TopicLogger(config);

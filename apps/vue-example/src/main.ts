@@ -18,9 +18,7 @@ const app = createApp(App);
 
 app.component('VCodeBlock', VCodeBlock);
 
-const TestTopic = new Topic({
-  topicName: 'TestTopic',
-});
+const TestTopic = new Topic();
 
 TestTopic.publish('TestEvent', 'TestPayload');
 
