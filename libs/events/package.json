@@ -6,12 +6,13 @@
   "main": "./src/index.js",
   "typings": "./src/index.d.ts",
   "dependencies": {
+    "@reactflow/core": "^11.11.4",
     "eventemitter3": "^5.0.1",
-    "tslib": "^2.6.2",
+    "react": "^18.3.1",
     "source-map": "github:abdelrahman-essawy/source-map",
     "stacktrace-parser": "^0.1.10",
-    "zustand": "^5.0.2",
-    "react": "^18.3.1"
+    "tslib": "^2.6.2",
+    "zustand": "^5.0.2"
   },
   "description": "A TypeScript package for managing events using eventemitter3, providing a simple and efficient way to publish, subscribe, and unsubscribe from events.",
   "repository": {

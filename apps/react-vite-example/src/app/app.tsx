@@ -1,13 +1,19 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import styles from './app.module.css';
+import ReactFlowVisualizer from './visual';
+import '@xyflow/react/dist/style.css';
+
+const nodes = [
+  {
+    id: '1',
+    position: { x: 0, y: 0 },
+    data: { label: 'Hello' },
+  },
+];
 
 export function App() {
   return (
     <div>
-      <h1>
-        <span> Hello there, </span>
-        Welcome react-vite-example 👋
-      </h1>
+      <ReactFlowVisualizer />
     </div>
   );
 }
