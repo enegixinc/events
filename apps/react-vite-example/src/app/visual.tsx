@@ -1,8 +1,7 @@
 import React from 'react';
 
-import { Background, ReactFlow } from '@xyflow/react';
+import { Background, Edge, Node, Position, ReactFlow } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import CustomNode from './node';
 
 const data = {
   topics: [
@@ -839,8 +838,107 @@ const data = {
               successCount: 360,
               errorCount: 0,
             },
+            {
+              type: 'publisher',
+              eventKey: 'IsOnline',
+              data: 'ONLINE',
+              originalPosition: {
+                file: '/@fs/D:/trolley-pos/node_modules/.vite/apps/deps/@enegix_events.js',
+                line: 14,
+                column: 9,
+                codeBlock:
+                  "\n  publish(event: string, data?: unknown) {\n    this.logMethod('publish', event, data);\n    console.log(\n      `Published '${event}' event with data: ${JSON.stringify(data)}`\n    );\n    this.emitter.emit(event, data);",
+              },
+              calledCount: 360,
+              successCount: 360,
+              errorCount: 0,
+            },
           ],
           subscribers: [
+            {
+              type: 'subscriber',
+              eventKey: 'IsOnline',
+              originalPosition: {
+                file: '/@fs/D:/trolley-pos/node_modules/.vite/apps/deps/@enegix_events.js',
+                line: 25,
+                column: 9,
+                codeBlock:
+                  "    callback: (data: ExpectedData) => void\n  ) {\n    this.logMethod('subscribe', event, callback);\n    const isMultipleEvents = Array.isArray(event);\n    const _callback = this.constructCallback(callback);\n\n    if (isMultipleEvents) {",
+              },
+              calledCount: 1,
+              successCount: 1,
+              errorCount: 0,
+            },
+            {
+              type: 'subscriber',
+              eventKey: 'IsOnline',
+              originalPosition: {
+                file: '/@fs/D:/trolley-pos/node_modules/.vite/apps/deps/@enegix_events.js',
+                line: 25,
+                column: 9,
+                codeBlock:
+                  "    callback: (data: ExpectedData) => void\n  ) {\n    this.logMethod('subscribe', event, callback);\n    const isMultipleEvents = Array.isArray(event);\n    const _callback = this.constructCallback(callback);\n\n    if (isMultipleEvents) {",
+              },
+              calledCount: 1,
+              successCount: 1,
+              errorCount: 0,
+            },
+            {
+              type: 'subscriber',
+              eventKey: 'IsOnline',
+              originalPosition: {
+                file: '/@fs/D:/trolley-pos/node_modules/.vite/apps/deps/@enegix_events.js',
+                line: 25,
+                column: 9,
+                codeBlock:
+                  "    callback: (data: ExpectedData) => void\n  ) {\n    this.logMethod('subscribe', event, callback);\n    const isMultipleEvents = Array.isArray(event);\n    const _callback = this.constructCallback(callback);\n\n    if (isMultipleEvents) {",
+              },
+              calledCount: 1,
+              successCount: 1,
+              errorCount: 0,
+            },
+            {
+              type: 'subscriber',
+              eventKey: 'IsOnline',
+              originalPosition: {
+                file: '/@fs/D:/trolley-pos/node_modules/.vite/apps/deps/@enegix_events.js',
+                line: 25,
+                column: 9,
+                codeBlock:
+                  "    callback: (data: ExpectedData) => void\n  ) {\n    this.logMethod('subscribe', event, callback);\n    const isMultipleEvents = Array.isArray(event);\n    const _callback = this.constructCallback(callback);\n\n    if (isMultipleEvents) {",
+              },
+              calledCount: 1,
+              successCount: 1,
+              errorCount: 0,
+            },
+            {
+              type: 'subscriber',
+              eventKey: 'IsOnline',
+              originalPosition: {
+                file: '/@fs/D:/trolley-pos/node_modules/.vite/apps/deps/@enegix_events.js',
+                line: 25,
+                column: 9,
+                codeBlock:
+                  "    callback: (data: ExpectedData) => void\n  ) {\n    this.logMethod('subscribe', event, callback);\n    const isMultipleEvents = Array.isArray(event);\n    const _callback = this.constructCallback(callback);\n\n    if (isMultipleEvents) {",
+              },
+              calledCount: 1,
+              successCount: 1,
+              errorCount: 0,
+            },
+            {
+              type: 'subscriber',
+              eventKey: 'IsOnline',
+              originalPosition: {
+                file: '/@fs/D:/trolley-pos/node_modules/.vite/apps/deps/@enegix_events.js',
+                line: 25,
+                column: 9,
+                codeBlock:
+                  "    callback: (data: ExpectedData) => void\n  ) {\n    this.logMethod('subscribe', event, callback);\n    const isMultipleEvents = Array.isArray(event);\n    const _callback = this.constructCallback(callback);\n\n    if (isMultipleEvents) {",
+              },
+              calledCount: 1,
+              successCount: 1,
+              errorCount: 0,
+            },
             {
               type: 'subscriber',
               eventKey: 'IsOnline',
@@ -890,77 +988,112 @@ const data = {
   ],
 };
 
-const createElements = (data) => {
-  const nodes = [];
-  const edges = [];
+type Publisher = {
+  type: string;
+};
 
-  data.topics.forEach((topic, id) => {
-    const topicY = id * 200;
+type Subscriber = {
+  type: string;
+};
 
-    const topicGroup = {
-      id: topic.topicName,
-      data: { label: topic.topicName },
-      position: { x: 0, y: topicY },
-      style: {
-        // width: 'full',
-        // height: 'full',
-        width: 400,
-        height: 200,
-      },
-      type: 'group',
-    };
-    // const topicNode = {
-    //   id: `topic-${id++}`,
-    //   data: { label: topic.topicName },
-    //   position: { x: 100, y: id * 100 },
-    // };
-    nodes.push(topicGroup);
+type Event = {
+  eventKey: string;
+  publishers: Publisher[];
+  subscribers: Subscriber[];
+};
 
-    topic.events.forEach((event, eventId) => {
-      const eventY = topicY + eventId * 200;
-      const eventNode = {
-        id: `${topicGroup.id}-${event.eventKey}`,
+type Topic = {
+  topicName: string;
+  events: Event[];
+};
+
+type Data = {
+  topics: Topic[];
+};
+
+const calculateDynamicPositions = (
+  baseX: number,
+  baseY: number,
+  count: number,
+  spacing: number
+) => {
+  const positions = [];
+  const totalHeight = (count - 1) * spacing; // Total height needed for spacing
+  const startY = baseY - totalHeight / 2; // Start above the center
+
+  for (let i = 0; i < count; i++) {
+    positions.push({
+      x: baseX,
+      y: startY + i * spacing,
+    });
+  }
+
+  return positions;
+};
+
+const createElements = (data: Data): { nodes: Node[]; edges: Edge[] } => {
+  const nodes: Node[] = [];
+  const edges: Edge[] = [];
+
+  data.topics.forEach((topic, topicIndex) => {
+    const topicBaseY = topicIndex * 600; // Space between topics
+
+    topic.events.forEach((event, eventIndex) => {
+      const eventBaseY = topicBaseY + eventIndex * 400; // Space between events within a topic
+
+      // Event Node: Centered
+      const eventNode: Node = {
+        id: `${topic.topicName}-event-${event.eventKey}`,
         data: { label: event.eventKey },
-        position: { x: 0, y: eventY },
-        extent: 'parent',
-        sourcePosition: 'right',
-        targetPosition: 'left',
+        position: { x: 0, y: eventBaseY },
+        style: { width: 150 },
+        sourcePosition: Position.Right,
+        targetPosition: Position.Left,
       };
       nodes.push(eventNode);
-      // edges.push({
-      //   id: `${topicGroup.id}-${eventNode.id}`,
-      //   source: topicGroup.id,
-      //   target: eventNode.id,
-      // });
 
-      event.publishers.forEach((publisher, pubId) => {
-        const publisherNode = {
-          id: `${eventNode.id}-${publisher.type}-${event.eventKey}-${pubId}`,
+      // Publishers: Evenly spaced in the left column
+      const publisherPositions = calculateDynamicPositions(
+        -300,
+        eventBaseY,
+        event.publishers.length,
+        100
+      );
+      event.publishers.forEach((publisher, pubIndex) => {
+        const publisherNode: Node = {
+          id: `${eventNode.id}-publisher-${pubIndex}`,
           data: { label: publisher.type },
-          position: { x: -pubId * 160 - 200, y: eventY },
-          sourcePosition: 'left',
-          targetPosition: 'right',
+          position: publisherPositions[pubIndex],
+          sourcePosition: Position.Right,
+          targetPosition: Position.Left,
         };
         nodes.push(publisherNode);
         edges.push({
-          id: `${eventNode.id}-${publisherNode.id}`,
-          source: eventNode.id,
-          target: publisherNode.id,
+          id: `${eventNode.id}-to-publisher-${pubIndex}`,
+          source: publisherNode.id,
+          target: eventNode.id,
+          type: 'smoothstep',
         });
       });
 
-      event.subscribers.forEach((subscriber, subId) => {
-        const subY = topicY + eventY + subId * 100;
-        const subscriberNode = {
-          id: `${eventNode.id}-${subscriber.type}-${event.eventKey}-${subId}`,
+      // Subscribers: Evenly spaced in the right column
+      const subscriberPositions = calculateDynamicPositions(
+        300,
+        eventBaseY,
+        event.subscribers.length,
+        100
+      );
+      event.subscribers.forEach((subscriber, subIndex) => {
+        const subscriberNode: Node = {
+          id: `${eventNode.id}-subscriber-${subIndex}`,
           data: { label: subscriber.type },
-          position: { x: 160 + 100, y: subY },
-          sourcePosition: 'right',
-          targetPosition: 'left',
+          position: subscriberPositions[subIndex],
+          sourcePosition: Position.Right,
+          targetPosition: Position.Left,
         };
         nodes.push(subscriberNode);
         edges.push({
-          id: `${eventNode.id}-${subscriberNode.id}`,
+          id: `${eventNode.id}-to-subscriber-${subIndex}`,
           source: eventNode.id,
           target: subscriberNode.id,
           animated: true,
@@ -969,30 +1102,30 @@ const createElements = (data) => {
       });
     });
   });
+
   return { nodes, edges };
 };
-const elements = createElements(data);
 
-const nodeTypes = {
-  custom: CustomNode,
+type ReactFlowVisualizerProps = {
+  data: Data;
 };
 
-function ReactFlowVisualizer() {
+const ReactFlowVisualizer: React.FC<ReactFlowVisualizerProps> = () => {
+  const { nodes, edges } = createElements(data);
+
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <ReactFlow
-        nodeTypes={nodeTypes}
-        nodes={elements.nodes}
-        edges={elements.edges}
+        nodes={nodes}
+        edges={edges}
         nodesConnectable={false}
-        colorMode={'system'}
-        fitView={true}
+        fitView
         attributionPosition="bottom-left"
       >
         <Background color="#aaa" gap={16} />
       </ReactFlow>
     </div>
   );
-}
+};
 
 export default ReactFlowVisualizer;
