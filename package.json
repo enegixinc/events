@@ -60,16 +60,18 @@
   },
   "homepage": "https://github.com/enegixinc/events#readme",
   "dependencies": {
+    "@testing-library/react": "^16.1.0",
     "@vue/devtools-api": "^7.6.4",
     "@vue/devtools-kit": "^7.6.4",
     "@wdns/vue-code-block": "^2.3.3",
+    "@xyflow/react": "^12.3.6",
     "eventemitter3": "^5.0.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "source-map": "github:abdelrahman-essawy/source-map",
     "stacktrace-parser": "^0.1.10",
-    "zustand": "^5.0.2",
     "tslib": "^2.8.1",
-    "vite-plugin-vue-devtools": "^7.6.4"
+    "vite-plugin-vue-devtools": "^7.6.4",
+    "zustand": "^5.0.2"
   }
 }
