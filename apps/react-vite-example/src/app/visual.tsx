@@ -925,48 +925,6 @@ const data = {
               successCount: 1,
               errorCount: 0,
             },
-            {
-              type: 'subscriber',
-              eventKey: 'IsOnline',
-              originalPosition: {
-                file: '/@fs/D:/trolley-pos/node_modules/.vite/apps/deps/@enegix_events.js',
-                line: 25,
-                column: 9,
-                codeBlock:
-                  "    callback: (data: ExpectedData) => void\n  ) {\n    this.logMethod('subscribe', event, callback);\n    const isMultipleEvents = Array.isArray(event);\n    const _callback = this.constructCallback(callback);\n\n    if (isMultipleEvents) {",
-              },
-              calledCount: 1,
-              successCount: 1,
-              errorCount: 0,
-            },
-            {
-              type: 'subscriber',
-              eventKey: 'IsOnline',
-              originalPosition: {
-                file: '/@fs/D:/trolley-pos/node_modules/.vite/apps/deps/@enegix_events.js',
-                line: 25,
-                column: 9,
-                codeBlock:
-                  "    callback: (data: ExpectedData) => void\n  ) {\n    this.logMethod('subscribe', event, callback);\n    const isMultipleEvents = Array.isArray(event);\n    const _callback = this.constructCallback(callback);\n\n    if (isMultipleEvents) {",
-              },
-              calledCount: 1,
-              successCount: 1,
-              errorCount: 0,
-            },
-            {
-              type: 'subscriber',
-              eventKey: 'IsOnline',
-              originalPosition: {
-                file: '/@fs/D:/trolley-pos/node_modules/.vite/apps/deps/@enegix_events.js',
-                line: 25,
-                column: 9,
-                codeBlock:
-                  "    callback: (data: ExpectedData) => void\n  ) {\n    this.logMethod('subscribe', event, callback);\n    const isMultipleEvents = Array.isArray(event);\n    const _callback = this.constructCallback(callback);\n\n    if (isMultipleEvents) {",
-              },
-              calledCount: 1,
-              successCount: 1,
-              errorCount: 0,
-            },
           ],
         },
       ],
@@ -1011,6 +969,18 @@ type Data = {
   topics: Topic[];
 };
 
+const calcMaxNodes = (event: { subscribers: any[]; publishers: any[] }) => {
+  return Math.max(event.publishers.length, event.subscribers.length);
+};
+
+const calcMaxNodesForTopic = (
+  events: { subscribers: any[]; publishers: any[] }[]
+) => {
+  return events.reduce((previousValue, currentValue) => {
+    return calcMaxNodes(currentValue) + previousValue;
+  }, 0);
+};
+
 const calculateDynamicPositions = (
   baseX: number,
   baseY: number,
@@ -1018,8 +988,8 @@ const calculateDynamicPositions = (
   spacing: number
 ) => {
   const positions = [];
-  const totalHeight = (count - 1) * spacing; // Total height needed for spacing
-  const startY = baseY - totalHeight / 2; // Start above the center
+  const totalHeight = (count - 1) * spacing;
+  const startY = baseY - totalHeight / 2; // Centered vertically
 
   for (let i = 0; i < count; i++) {
     positions.push({
@@ -1031,30 +1001,60 @@ const calculateDynamicPositions = (
   return positions;
 };
 
-const createElements = (data: Data): { nodes: Node[]; edges: Edge[] } => {
+const createElements = (
+  data: Data,
+  eventGap: number = 450 // Adjustable gap between events
+): { nodes: Node[]; edges: Edge[] } => {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
   data.topics.forEach((topic, topicIndex) => {
-    const topicBaseY = topicIndex * 600; // Space between topics
+    const topicMaxHeight = (calcMaxNodesForTopic(topic.events) * eventGap) / 2; // Account for gaps
+    const topicNode: Node = {
+      id: topic.topicName + topicIndex,
+      data: { label: topic.topicName },
+      position: {
+        x: 0,
+        y: topicIndex * (topicMaxHeight + 100), // Space topics vertically
+      },
+      style: {
+        width: 800,
+        height: topicMaxHeight,
+        backgroundColor: `rgba(${100 * topicIndex},55,55,0.25)`,
+      },
+      type: 'group',
+    };
+
+    nodes.push(topicNode);
 
     topic.events.forEach((event, eventIndex) => {
-      const eventBaseY = topicBaseY + eventIndex * 400; // Space between events within a topic
+      const eventCount = topic.events.length;
+      const totalEventHeight = eventCount * (100 + eventGap);
+      const startEventY = topicNode.style.height / 2 - totalEventHeight / 2;
 
-      // Event Node: Centered
+      const eventBaseY = startEventY + eventIndex * (100 + eventGap); // Include gap
+
+      // Event Node
       const eventNode: Node = {
         id: `${topic.topicName}-event-${event.eventKey}`,
         data: { label: event.eventKey },
-        position: { x: 0, y: eventBaseY },
-        style: { width: 150 },
+        position: {
+          x: topicNode.style.width / 2,
+          y: eventBaseY,
+        },
+        style: {
+          translate: '-50%',
+        },
         sourcePosition: Position.Right,
         targetPosition: Position.Left,
+        parentId: topicNode.id,
+        extent: 'parent',
       };
       nodes.push(eventNode);
 
-      // Publishers: Evenly spaced in the left column
+      // Publishers
       const publisherPositions = calculateDynamicPositions(
-        -300,
+        100, // Left column
         eventBaseY,
         event.publishers.length,
         100
@@ -1066,6 +1066,8 @@ const createElements = (data: Data): { nodes: Node[]; edges: Edge[] } => {
           position: publisherPositions[pubIndex],
           sourcePosition: Position.Right,
           targetPosition: Position.Left,
+          parentId: topicNode.id,
+          extent: 'parent',
         };
         nodes.push(publisherNode);
         edges.push({
@@ -1076,9 +1078,9 @@ const createElements = (data: Data): { nodes: Node[]; edges: Edge[] } => {
         });
       });
 
-      // Subscribers: Evenly spaced in the right column
+      // Subscribers
       const subscriberPositions = calculateDynamicPositions(
-        300,
+        600, // Right column
         eventBaseY,
         event.subscribers.length,
         100
@@ -1090,6 +1092,8 @@ const createElements = (data: Data): { nodes: Node[]; edges: Edge[] } => {
           position: subscriberPositions[subIndex],
           sourcePosition: Position.Right,
           targetPosition: Position.Left,
+          parentId: topicNode.id,
+          extent: 'parent',
         };
         nodes.push(subscriberNode);
         edges.push({
@@ -1121,6 +1125,7 @@ const ReactFlowVisualizer: React.FC<ReactFlowVisualizerProps> = () => {
         nodesConnectable={false}
         fitView
         attributionPosition="bottom-left"
+        colorMode={'system'}
       >
         <Background color="#aaa" gap={16} />
       </ReactFlow>
