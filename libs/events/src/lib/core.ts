@@ -90,13 +90,11 @@ export class EventsManager<T> {
     data?: unknown
   ) {
     // Skip source map handling in tests
-    if (import.meta.env.MODE === 'test') {
-      return;
-    }
+    // if (import.meta.env.MODE === 'test') return;
 
     const stack = new Error().stack as string;
     const parsedStack = stackTraceParser.parse(stack);
-    const caller = parsedStack[1];
+    const caller = parsedStack[2];
     if (!caller.file || !caller.lineNumber || !caller.column) {
       throw new Error('Cannot get caller information');
     }
