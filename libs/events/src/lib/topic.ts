@@ -20,6 +20,10 @@ export class Topic<T extends TopicType> {
     return this.eventsManager.subscribe(event as any, callback);
   }
 
+  subscribeOnce<E extends keyof T>(event: E, callback: (data: T[E]) => void) {
+    return this.eventsManager.subscribeOnce(event as any, callback);
+  }
+
   unsubscribeAll() {
     this.eventsManager.unsubscribeAll();
   }

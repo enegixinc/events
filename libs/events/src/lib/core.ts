@@ -61,7 +61,10 @@ export class EventsManager<T> {
     }
   }
 
-  subscribeOnce(event: string, callback: (data?: T) => void) {
+  subscribeOnce<ExpectedData>(
+    event: string,
+    callback: (data: ExpectedData) => void
+  ) {
     const _callback = this.constructCallback(callback);
     this._subscribe(event, _callback, true);
     return { unsubscribe: () => this.unsubscribe(event) };
